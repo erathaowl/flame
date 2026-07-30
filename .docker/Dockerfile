@@ -1,10 +1,11 @@
-FROM node:16 as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN apk --no-cache --virtual build-dependencies add python3 make g++ \
+    && npm install --production
 
 COPY . .
 
@@ -16,7 +17,7 @@ RUN mkdir -p ./public ./data \
     && mv ./client/build/* ./public \
     && rm -rf ./client
 
-FROM node:16-alpine
+FROM node:20-alpine
 
 COPY --from=builder /app /app
 
