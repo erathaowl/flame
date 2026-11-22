@@ -44,7 +44,7 @@ workspace.
 | Authentication and public/private access | Yes | Yes | Yes |
 | Application create, edit, visibility and delete | Yes | Yes | Yes |
 | Category and bookmark management | Yes | Yes | Yes |
-| Custom ordering, invalid payloads | Yes | Yes | Partial |
+| Custom ordering, invalid payloads | Yes | Yes | Application keyboard drag |
 | YAML export, import, validation, rollback | Yes | Yes | Yes |
 | Random quotes, empty/invalid lists | No | Yes | Yes |
 | Gatus status colors, cache and privacy | Yes | Yes | Indirect |
@@ -58,8 +58,8 @@ verify full SQLite rollback. No production credentials or external
 services are needed.
 
 The Chromium test exercises login, application and bookmark forms,
-visibility actions, YAML download/upload, guest filtering and switching
-the header clock/quote layout.
+visibility actions, YAML download/upload, guest filtering, keyboard
+reordering of application rows and switching the header clock/quote layout.
 
 ## Remaining limitations
 
