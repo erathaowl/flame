@@ -36,6 +36,7 @@ test('browser: application and bookmark management with YAML backup', async ({ p
     await page.getByText('Add', { exact: true }).click();
     await page.getByLabel('App name').fill('Browser App');
     await page.getByLabel('App URL').fill('https://browser.example.com');
+    await page.getByLabel('App icon').fill('server');
     await submit(page, 'POST', '/api/apps',
       page.getByRole('button', { name: 'Add new application' }));
     await page.reload();
