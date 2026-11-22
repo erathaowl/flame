@@ -19,6 +19,7 @@ test('fresh installation applies all migrations and initializes typed settings',
     );
 
     process.chdir(directory);
+    process.env.VERSION = '2.5.1';
     const db = require('../../db');
     sequelize = db.sequelize;
     await db.connectDB();
