@@ -17,6 +17,7 @@ export interface GeneralForm {
   useOrdering: string;
   appsSameTab: boolean;
   bookmarksSameTab: boolean;
+  gatusUrl: string;
 }
 
 export interface UISettingsForm {
@@ -26,6 +27,7 @@ export interface UISettingsForm {
   hideCategories: boolean;
   useAmericanDate: boolean;
   greetingsSchema: string;
+  largeClock: boolean;
   daySchema: string;
   monthSchema: string;
   showTime: boolean;

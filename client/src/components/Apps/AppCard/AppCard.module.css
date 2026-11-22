@@ -48,3 +48,17 @@
   margin-left: 2px;
   object-fit: contain;
 }
+
+.AppCardDetails .StatusDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+  opacity: 1;
+}
+
+.green { background-color: #32a852; }
+.yellow { background-color: #e5ad2d; }
+.red { background-color: #df4545; }

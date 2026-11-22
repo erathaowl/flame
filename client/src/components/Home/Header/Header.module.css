@@ -29,3 +29,10 @@
     visibility: hidden;
   }
 }
+
+.Header .SmallQuote {
+  text-transform: none;
+  height: auto;
+  min-height: 30px;
+  overflow-wrap: anywhere;
+}

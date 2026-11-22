@@ -8,9 +8,10 @@ import { State } from '../../../store/reducers';
 
 interface Props {
   app: App;
+  status?: 'green' | 'yellow' | 'red';
 }
 
-export const AppCard = ({ app }: Props): JSX.Element => {
+export const AppCard = ({ app, status }: Props): JSX.Element => {
   const { config } = useSelector((state: State) => state.config);
 
   const [displayUrl, redirectUrl] = urlParser(app.url);
@@ -53,7 +54,17 @@ export const AppCard = ({ app }: Props): JSX.Element => {
     >
       <div className={classes.AppCardIcon}>{iconEl}</div>
       <div className={classes.AppCardDetails}>
-        <h5>{app.name}</h5>
+        <h5>
+          {app.name}
+          {status && (
+            <span
+              className={`${classes.StatusDot} ${classes[status]}`}
+              role="img"
+              aria-label={`Service status: ${status}`}
+              title={`Gatus: ${status === 'green' ? 'healthy' : status === 'red' ? 'down' : 'degraded or unknown'}`}
+            />
+          )}
+        </h5>
         <span>{!app.description.length ? displayUrl : app.description}</span>
       </div>
     </a>

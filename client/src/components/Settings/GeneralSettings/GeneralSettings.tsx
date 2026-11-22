@@ -132,6 +132,21 @@ export const GeneralSettings = (): JSX.Element => {
           </select>
         </InputGroup>
 
+        {/* === SERVICE STATUS === */}
+        <SettingsHeadline text="Service status" />
+        <InputGroup>
+          <label htmlFor="gatusUrl">Gatus URL</label>
+          <input
+            type="url"
+            id="gatusUrl"
+            name="gatusUrl"
+            placeholder="https://status.example.com"
+            value={formData.gatusUrl || ''}
+            onChange={(e) => inputChangeHandler(e)}
+          />
+          <span>Flame retrieves statuses from the Gatus API. Configure an endpoint key in each application.</span>
+        </InputGroup>
+
         {/* === BOOKMARKS OPTIONS === */}
         <SettingsHeadline text="Bookmarks" />
         {/* PIN CATEGORIES */}

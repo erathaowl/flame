@@ -14,6 +14,7 @@ import { InputGroup, Button, SettingsHeadline } from '../../UI';
 
 // Utils
 import { uiSettingsTemplate, inputHandler } from '../../../utility';
+import { QuoteSettings } from './QuoteSettings';
 
 export const UISettings = (): JSX.Element => {
   const { loading, config } = useSelector((state: State) => state.config);
@@ -56,6 +57,7 @@ export const UISettings = (): JSX.Element => {
   };
 
   return (
+    <>
     <form onSubmit={(e) => formSubmitHandler(e)}>
       {/* === OTHER OPTIONS === */}
       <SettingsHeadline text="Miscellaneous" />
@@ -162,6 +164,20 @@ export const UISettings = (): JSX.Element => {
         </select>
       </InputGroup>
 
+      {/* CLOCK LAYOUT */}
+      <InputGroup>
+        <label htmlFor="largeClock">Header layout</label>
+        <select
+          id="largeClock"
+          name="largeClock"
+          value={formData.largeClock ? 1 : 0}
+          onChange={(e) => inputChangeHandler(e, { isBool: true })}
+        >
+          <option value={0}>Large greeting / small date and time</option>
+          <option value={1}>Large clock / small quote</option>
+        </select>
+      </InputGroup>
+
       {/* CUSTOM GREETINGS */}
       <InputGroup>
         <label htmlFor="greetingsSchema">Custom greetings</label>
@@ -239,5 +255,7 @@ export const UISettings = (): JSX.Element => {
 
       <Button>Save changes</Button>
     </form>
+    <QuoteSettings />
+    </>
   );
 };

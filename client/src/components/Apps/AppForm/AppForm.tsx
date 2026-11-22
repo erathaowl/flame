@@ -76,6 +76,7 @@ export const AppForm = ({ modalHandler }: Props): JSX.Element => {
 
       data.append('name', formData.name);
       data.append('description', formData.description);
+      data.append('statusEndpoint', formData.statusEndpoint || '');
       data.append('url', formData.url);
       data.append('isPublic', `${formData.isPublic ? 1 : 0}`);
 
@@ -147,6 +148,20 @@ export const AppForm = ({ modalHandler }: Props): JSX.Element => {
         <span>
           Optional - If description is not set, app URL will be displayed
         </span>
+      </InputGroup>
+
+      {/* GATUS STATUS */}
+      <InputGroup>
+        <label htmlFor="statusEndpoint">Gatus endpoint key (optional)</label>
+        <input
+          type="text"
+          name="statusEndpoint"
+          id="statusEndpoint"
+          placeholder="production_my-service"
+          value={formData.statusEndpoint || ''}
+          onChange={(e) => inputChangeHandler(e)}
+        />
+        <span>Set the Gatus instance URL in General settings. Leave this field empty to hide the status indicator.</span>
       </InputGroup>
 
       {/* ICON */}
