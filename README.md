@@ -113,6 +113,35 @@ Gatus response fields are documented in the
 [official Gatus SDK EndpointStatus and EndpointResult definitions](https://github.com/TwiN/gatus-sdk/blob/master/models.go).
 An empty URL hides the status indicator.
 
+## YAML backup and restore
+
+Open **Settings > Backup** to export all applications, bookmark categories
+and bookmarks as a single YAML file. The export includes names, URLs, icons
+(references), descriptions, visibility, pinning, sorting order, and the Gatus
+status URL assigned to each application.
+
+Importing a YAML file **replaces** all current applications, categories,
+and bookmarks. The interface requires confirmation before replacing data.
+Export a backup before importing. Custom icon **files** stored in
+`/app/data/uploads` are not embedded in the YAML; preserve that directory
+separately when migrating installations.
+
+The format includes a `version: 1` field, a `sorting` key, and the
+`applications` and `categories` lists. Each category contains a
+`bookmarks` list. Entity database IDs are recreated on import.
+
+## Header clock and quote library
+
+Under **Settings > Interface**, choose between the default large
+greeting/quote with small date/time, or a **large clock with a small quote**
+below the search bar.
+
+The quote library is also managed in **Settings > Interface**. Enter one
+quote per line and save. Quotes are persisted in SQLite and one is chosen
+randomly each time the homepage loads. An empty library falls back to the
+existing time-of-day greetings. The library does not impose a four-quote
+limit.
+
 ## Installation
 
 ### With Docker (recommended)

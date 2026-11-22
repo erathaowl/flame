@@ -1,3 +1,11 @@
+### v2.4.2 (2026-11-22)
+- Added independent Gatus status URLs to applications, with green/yellow/red status indicators based on the most recent checks.
+- Added YAML export/import for applications, bookmark categories and bookmarks, preserving custom order, visibility, pinning and application status URLs.
+- Added an optional large clock with a compact quote in the homepage header.
+- Added a persistent SQLite quote library with random selection on homepage load.
+- Added authenticated management endpoints and frontend settings for importing data and maintaining quotes.
+- Added automated tests for Gatus status parsing and URL validation.
+
 ### v2.4.1 (2026-11-22)
 - Fixed application, bookmark and category reordering with validated, transactional database updates.
 - Fixed drag-and-drop table behavior and visibility toggle persistence.
