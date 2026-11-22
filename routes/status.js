@@ -31,7 +31,7 @@ const fetchStatus = async (url) => {
 };
 
 router.get('/', auth, asyncWrapper(async (req, res) => {
-  const apps = await App.findAll();
+  const apps = await App.findAll({ attributes: ['id', 'statusEndpoint', 'isPublic'] });
   const visibleApps = req.isAuthenticated
     ? apps
     : apps.filter((app) => Boolean(app.isPublic));

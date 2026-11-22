@@ -16,6 +16,7 @@ function loadController(filename, model, sequelize) {
     '../../models/Bookmark': model,
     '../../models/Category': model,
     '../../db': { sequelize },
+    '../reorder': require('../controllers/reorder'),
     '../../utils/loadConfig': async () => ({
       pinAppsByDefault: true,
       pinCategoriesByDefault: true,

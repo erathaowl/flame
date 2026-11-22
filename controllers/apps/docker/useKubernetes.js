@@ -4,7 +4,7 @@ const Logger = require('../../../utils/Logger');
 const logger = new Logger();
 const loadConfig = require('../../../utils/loadConfig');
 
-const useKubernetes = async (apps) => {
+const useKubernetes = async () => {
   const { useOrdering: orderType, unpinStoppedApps } = await loadConfig();
 
   let ingresses = null;
@@ -13,20 +13,19 @@ const useKubernetes = async (apps) => {
     const kc = new k8s.KubeConfig();
     kc.loadFromCluster();
     const k8sNetworkingV1Api = kc.makeApiClient(k8s.NetworkingV1Api);
-    await k8sNetworkingV1Api.listIngressForAllNamespaces().then((res) => {
-      ingresses = res.body.items;
-    });
+    const response = await k8sNetworkingV1Api.listIngressForAllNamespaces();
+    ingresses = response.body.items;
   } catch {
     logger.log("Can't connect to the Kubernetes API", 'ERROR');
   }
 
   if (ingresses) {
-    apps = await App.findAll({
+    const apps = await App.findAll({
       order: [[orderType, 'ASC']],
     });
 
     ingresses = ingresses.filter(
-      (e) => Object.keys(e.metadata.annotations).length !== 0
+      (ingress) => ingress.metadata?.annotations && Object.keys(ingress.metadata.annotations).length !== 0
     );
 
     const kubernetesApps = [];
@@ -56,15 +55,13 @@ const useKubernetes = async (apps) => {
     }
 
     if (unpinStoppedApps) {
-      for (const app of apps) {
-        await app.update({ isPinned: false });
-      }
+      await App.update({ isPinned: false }, { where: { isPinned: true } });
     }
 
     for (const item of kubernetesApps) {
       // Find by name or url
-      if (apps.some((app) => app.name === item.name || app.url === item.url)) {
-        const app = apps.find((a) => a.name === item.name || app.url === item.url);
+      const app = apps.find((entry) => entry.name === item.name || entry.url === item.url);
+      if (app) {
         await app.update({ ...item, isPinned: true });
       } else {
         await App.create({

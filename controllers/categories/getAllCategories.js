@@ -10,9 +10,6 @@ const loadConfig = require('../../utils/loadConfig');
 const getAllCategories = asyncWrapper(async (req, res, next) => {
   const { useOrdering: orderType } = await loadConfig();
 
-  let categories;
-  let output;
-
   // categories visibility
   const where = req.isAuthenticated ? {} : { isPublic: true };
 
@@ -27,7 +24,7 @@ const getAllCategories = asyncWrapper(async (req, res, next) => {
           [{ model: Bookmark, as: 'bookmarks' }, orderType, 'ASC'],
         ];
 
-  categories = categories = await Category.findAll({
+  const categories = await Category.findAll({
     include: [
       {
         model: Bookmark,
@@ -38,16 +35,15 @@ const getAllCategories = asyncWrapper(async (req, res, next) => {
     where,
   });
 
-  if (req.isAuthenticated) {
-    output = categories;
-  } else {
-    // filter out private bookmarks
-    output = categories.map((c) => c.get({ plain: true }));
-    output = output.map((c) => ({
-      ...c,
-      bookmarks: c.bookmarks.filter((b) => b.isPublic),
-    }));
-  }
+  const output = req.isAuthenticated
+    ? categories
+    : categories.map((category) => {
+        const data = category.get({ plain: true });
+        return {
+          ...data,
+          bookmarks: data.bookmarks.filter((bookmark) => bookmark.isPublic),
+        };
+      });
 
   res.status(200).json({
     success: true,

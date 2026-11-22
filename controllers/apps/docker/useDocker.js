@@ -4,7 +4,7 @@ const Logger = require('../../../utils/Logger');
 const logger = new Logger();
 const loadConfig = require('../../../utils/loadConfig');
 
-const useDocker = async (apps) => {
+const useDocker = async () => {
   const {
     useOrdering: orderType,
     unpinStoppedApps,
@@ -38,7 +38,7 @@ const useDocker = async (apps) => {
   }
 
   if (containers) {
-    apps = await App.findAll({
+    const apps = await App.findAll({
       order: [[orderType, 'ASC']],
     });
 
@@ -70,7 +70,8 @@ const useDocker = async (apps) => {
               const regex = /\`([a-zA-Z0-9\.\-]+)\`/g;
               const domains = [];
 
-              while ((match = regex.exec(value)) != null) {
+              let match;
+              while ((match = regex.exec(value)) !== null) {
                 domains.push('http://' + match[1]);
               }
 
@@ -88,24 +89,13 @@ const useDocker = async (apps) => {
         'flame.url' in labels &&
         /^app/.test(labels['flame.type'])
       ) {
-        for (let i = 0; i < labels['flame.name'].split(';').length; i++) {
-          const names = labels['flame.name'].split(';');
-          const urls = labels['flame.url'].split(';');
-          let icons = '';
-          let descriptions = '';
-          let visibility = [];
+        const names = labels['flame.name'].split(';');
+        const urls = labels['flame.url'].split(';');
+        const icons = labels['flame.icon']?.split(';') || [];
+        const descriptions = labels['flame.description']?.split(';') || [];
+        const visibility = labels['flame.visible']?.split(';') || [];
 
-          if ('flame.icon' in labels) {
-            icons = labels['flame.icon'].split(';');
-          }
-
-          if ('flame.description' in labels) {
-            descriptions = labels['flame.description'].split(';');
-          }
-
-          if ('flame.visible' in labels) {
-            visibility = labels['flame.visible'].split(';');
-          }
+        for (let i = 0; i < names.length; i++) {
 
           const item = {
             name: names[i] || names[0],
@@ -125,16 +115,14 @@ const useDocker = async (apps) => {
     }
 
     if (unpinStoppedApps) {
-      for (const app of apps) {
-        await app.update({ isPinned: false });
-      }
+      await App.update({ isPinned: false }, { where: { isPinned: true } });
     }
 
     for (const item of dockerApps) {
       // If app already exists, update it
       // Find by name or url
-      if (apps.some((app) => app.name === item.name || app.url === item.url)) {
-        const app = apps.find((a) => a.name === item.name || a.url === item.url);
+      const app = apps.find((entry) => entry.name === item.name || entry.url === item.url);
+      if (app) {
 
         if (
           item.icon === 'custom' ||

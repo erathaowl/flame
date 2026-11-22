@@ -59,20 +59,20 @@ router.post('/', express.text({
     await Category.destroy({ where: {}, transaction });
     await App.destroy({ where: {}, transaction });
 
-    for (const app of data.applications) {
-      await App.create(app, { transaction });
-    }
+    await App.bulkCreate(data.applications, { transaction });
 
     for (const category of data.categories) {
       const { bookmarks, ...attributes } = category;
       const created = await Category.create(attributes, { transaction });
-      for (const bookmark of bookmarks) {
-        await Bookmark.create({ ...bookmark, categoryId: created.id }, { transaction });
-      }
+      await Bookmark.bulkCreate(
+        bookmarks.map((bookmark) => ({ ...bookmark, categoryId: created.id })),
+        { transaction }
+      );
     }
 
-    await writeFile(configFile, JSON.stringify(config));
   });
+
+  await writeFile(configFile, JSON.stringify(config));
 
   return res.json({
     success: true,
