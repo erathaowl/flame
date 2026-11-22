@@ -75,7 +75,11 @@ export const addCategory =
 
       dispatch<any>(sortCategories());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add category' },
+      });
     }
   };
 
@@ -104,7 +108,11 @@ export const addBookmark =
 
       dispatch<any>(sortBookmarks(res.data.data.categoryId));
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add bookmark' },
+      });
     }
   };
 
@@ -135,7 +143,11 @@ export const pinCategory =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to change category pin' },
+      });
     }
   };
 
@@ -159,7 +171,11 @@ export const deleteCategory =
         payload: id,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete category' },
+      });
     }
   };
 
@@ -188,7 +204,11 @@ export const updateCategory =
 
       dispatch<any>(sortCategories());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update category' },
+      });
     }
   };
 
@@ -216,7 +236,11 @@ export const deleteBookmark =
         },
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete bookmark' },
+      });
     }
   };
 
@@ -277,7 +301,11 @@ export const updateBookmark =
 
       dispatch<any>(sortBookmarks(res.data.data.categoryId));
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update bookmark' },
+      });
     }
   };
 

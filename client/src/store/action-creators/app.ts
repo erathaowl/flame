@@ -66,7 +66,11 @@ export const pinApp =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to change application pin' },
+      });
     }
   };
 
@@ -93,7 +97,11 @@ export const addApp =
       // Sort apps
       dispatch<any>(sortApps());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add application' },
+      });
     }
   };
 
@@ -117,7 +125,11 @@ export const deleteApp =
         payload: id,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete application' },
+      });
     }
   };
 
@@ -149,7 +161,11 @@ export const updateApp =
       // Sort apps
       dispatch<any>(sortApps());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update application' },
+      });
     }
   };
 
