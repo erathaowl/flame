@@ -142,6 +142,30 @@ randomly each time the homepage loads. An empty library falls back to the
 existing time-of-day greetings. The library does not impose a four-quote
 limit.
 
+## SQLite settings storage
+
+From the configuration migration following v2.5.1, Flame stores settings
+in the SQLite `settings` table. Each setting is a row with a `key`, text
+`value`, and `valueType` (`string`, `number`, or `boolean`). Applications,
+bookmarks, categories and quotes remain in their existing tables.
+
+On first startup after upgrading, the database migration copies all scalar
+settings from `data/config.json` into SQLite, using `initialConfig.json`
+for missing defaults. Existing values, including custom options, are
+preserved. `data/config.json` remains untouched as a migration backup;
+changes made to it afterward have no effect. Current settings are read and
+updated through SQLite only.
+
+The YAML restore operation now updates the sorting setting in the *same*
+SQLite transaction as applications, categories, and bookmarks. An import
+failure rolls back all those changes. Other settings and uploaded icon
+files are outside the scope of the YAML export.
+
+Flame also takes its existing database backup before applying migrations
+(`data/db_backups`). Keep a full copy of the `/app/data` volume before
+upgrading. When downgrading to a file-based release, restore the matching
+pre-migration database and configuration backup together.
+
 ## Installation
 
 ### With Docker (recommended)
