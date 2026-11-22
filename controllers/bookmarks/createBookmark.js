@@ -20,7 +20,13 @@ const createBookmark = asyncWrapper(async (req, res, next) => {
     body.icon = req.file.filename;
   }
 
-  bookmark = await Bookmark.create(body);
+  const lastOrder = await Bookmark.max('orderId', {
+    where: { categoryId: body.categoryId },
+  });
+  bookmark = await Bookmark.create({
+    ...body,
+    orderId: (lastOrder || 0) + 1,
+  });
 
   res.status(201).json({
     success: true,
