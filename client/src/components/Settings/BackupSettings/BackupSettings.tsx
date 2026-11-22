@@ -2,7 +2,6 @@ import { ChangeEvent, useState } from 'react';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { State } from '../../../store/reducers';
 import { actionCreators } from '../../../store';
 import { applyAuth } from '../../../utility';
 import { InputGroup, SettingsHeadline } from '../../UI';

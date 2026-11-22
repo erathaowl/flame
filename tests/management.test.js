@@ -181,6 +181,7 @@ function loadIntegration(filename, model, extra) {
       useOrdering: 'orderId',
       unpinStoppedApps: false,
       dockerHost: 'localhost:2375',
+      ...extra.config,
     }),
     '@kubernetes/client-node': extra.kubernetes,
   };
@@ -328,4 +329,45 @@ test('Kubernetes integration preserves visibility without a label', async () => 
 
   await useKubernetes();
   assert.equal(app.isPublic, 0);
+});
+
+
+test('missing application returns an error without throwing a ReferenceError', async () => {
+  const handler = loadController(
+    'controllers/apps/updateApp.js',
+    { async findOne() { return null; } }
+  );
+  let received;
+  await handler(
+    { params: { id: '999' }, body: { name: 'Missing' } },
+    response(),
+    (error) => { received = error; }
+  );
+  assert.match(received.message, /App with the id of 999 was not found/);
+});
+
+test('Docker synchronization unpins existing apps using one bulk update', async () => {
+  const calls = [];
+  const app = {
+    name: 'Other',
+    url: 'https://other.example.com',
+    async update() { throw new Error('Unexpected instance update'); },
+  };
+  const model = {
+    async findAll() { return [app]; },
+    async update(data, options) { calls.push({ data, options }); },
+    async create() { throw new Error('Unexpected create'); },
+  };
+  const useDocker = loadIntegration(
+    'controllers/apps/docker/useDocker.js',
+    model,
+    {
+      axios: { async get() { return { data: [] }; } },
+      config: { unpinStoppedApps: true },
+    }
+  );
+  await useDocker();
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].data.isPinned, false);
+  assert.equal(calls[0].options.where.isPinned, true);
 });

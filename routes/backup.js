@@ -12,22 +12,26 @@ const router = express.Router();
 router.use(auth, requireAuth);
 
 router.get('/', asyncWrapper(async (req, res) => {
-  const [applications, categories, config] = await Promise.all([
-    App.findAll({ order: [['orderId', 'ASC'], ['id', 'ASC']] }),
+  const config = await loadConfig();
+  const sortField = config.useOrdering === 'createdAt' ? 'createdAt' : 'orderId';
+  const order = [[sortField, 'ASC'], ['id', 'ASC']];
+  const [applications, categories] = await Promise.all([
+    App.findAll({ order }),
     Category.findAll({
       include: [{ model: Bookmark, as: 'bookmarks' }],
-      order: [['orderId', 'ASC'], ['id', 'ASC']],
+      order,
     }),
-    loadConfig(),
   ]);
 
   const document = exportBackup({
     applications,
     categories: categories.map((category) => ({
       ...category.get({ plain: true }),
-      bookmarks: category.bookmarks
-        .slice()
-        .sort((a, b) => (a.orderId || 0) - (b.orderId || 0)),
+      bookmarks: category.bookmarks.slice().sort((a, b) => {
+        if (a[sortField] < b[sortField]) return -1;
+        if (a[sortField] > b[sortField]) return 1;
+        return a.id - b.id;
+      }),
     })),
     sorting: config.useOrdering,
   });

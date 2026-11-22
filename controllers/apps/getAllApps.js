@@ -9,14 +9,15 @@ const { useKubernetes, useDocker } = require('./docker');
 // @route     GET /api/apps
 // @access    Public
 const getAllApps = asyncWrapper(async (req, res, next) => {
+  const config = await loadConfig();
   const {
     useOrdering: orderType,
     dockerApps: useDockerAPI,
     kubernetesApps: useKubernetesAPI,
-  } = await loadConfig();
+  } = config;
 
-  if (useDockerAPI) await useDocker();
-  if (useKubernetesAPI) await useKubernetes();
+  if (useDockerAPI) await useDocker(config);
+  if (useKubernetesAPI) await useKubernetes(config);
 
   // apps visibility
   const where = req.isAuthenticated ? {} : { isPublic: true };

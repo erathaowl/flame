@@ -4,8 +4,8 @@ const Logger = require('../../../utils/Logger');
 const logger = new Logger();
 const loadConfig = require('../../../utils/loadConfig');
 
-const useKubernetes = async () => {
-  const { useOrdering: orderType, unpinStoppedApps } = await loadConfig();
+const useKubernetes = async (config) => {
+  const { useOrdering: orderType, unpinStoppedApps } = config || await loadConfig();
 
   let ingresses = null;
 

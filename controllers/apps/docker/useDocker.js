@@ -4,12 +4,12 @@ const Logger = require('../../../utils/Logger');
 const logger = new Logger();
 const loadConfig = require('../../../utils/loadConfig');
 
-const useDocker = async () => {
+const useDocker = async (config) => {
   const {
     useOrdering: orderType,
     unpinStoppedApps,
     dockerHost: host,
-  } = await loadConfig();
+  } = config || await loadConfig();
 
   let containers = null;
 

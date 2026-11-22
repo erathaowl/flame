@@ -13,9 +13,7 @@ export const Header = (): JSX.Element => {
     (state: State) => state.config.config
   );
 
-  const [dateTime, setDateTime] = useState(getDateTime());
-  const [clock, setClock] = useState(new Date().toLocaleTimeString('en-GB', { hour12: false }));
-  const [greeting, setGreeting] = useState(greeter());
+  const [now, setNow] = useState(() => new Date());
   const [quote, setQuote] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,21 +21,20 @@ export const Header = (): JSX.Element => {
       .then((response) => setQuote(response.data.data))
       .catch(() => setQuote(null));
 
-    const timer = window.setInterval(() => {
-      setDateTime(getDateTime());
-      setClock(new Date().toLocaleTimeString('en-GB', { hour12: false }));
-      setGreeting(greeter());
-    }, 1000);
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
 
     return () => window.clearInterval(timer);
   }, []);
 
+  const clock = now.toLocaleTimeString('en-GB', { hour12: false });
+  const greeting = quote || greeter();
+
   return (
     <header className={classes.Header}>
       {largeClock ? (
-        !hideHeader && <p className={classes.SmallQuote}>{quote || greeting}</p>
+        !hideHeader && <p className={classes.SmallQuote}>{greeting}</p>
       ) : (
-        (!hideDate || showTime) && <p>{dateTime}</p>
+        (!hideDate || showTime) && <p>{getDateTime()}</p>
       )}
 
       <Link to="/settings" className={classes.SettingsLink}>
@@ -46,7 +43,7 @@ export const Header = (): JSX.Element => {
 
       {!hideHeader && (
         <span className={classes.HeaderMain}>
-          <h1>{largeClock ? clock : quote || greeting}</h1>
+          <h1>{largeClock ? clock : greeting}</h1>
           <WeatherWidget />
         </span>
       )}

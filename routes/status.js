@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const App = require('../models/App');
+const { Op } = require('sequelize');
 const { auth, asyncWrapper } = require('../middleware');
 const { getStatus, isGatusUrl } = require('../utils/gatusStatus');
 
@@ -31,17 +32,27 @@ const fetchStatus = async (url) => {
 };
 
 router.get('/', auth, asyncWrapper(async (req, res) => {
-  const apps = await App.findAll({ attributes: ['id', 'statusEndpoint', 'isPublic'] });
-  const visibleApps = req.isAuthenticated
-    ? apps
-    : apps.filter((app) => Boolean(app.isPublic));
-  const monitoredApps = visibleApps.filter((app) => app.statusEndpoint);
-  const statuses = {};
+  const where = { statusEndpoint: { [Op.ne]: '' } };
+  if (!req.isAuthenticated) where.isPublic = true;
 
-  for (let index = 0; index < monitoredApps.length; index += 6) {
-    await Promise.all(monitoredApps.slice(index, index + 6).map(async (app) => {
-      statuses[app.id] = await fetchStatus(app.statusEndpoint);
+  const apps = await App.findAll({
+    attributes: ['id', 'statusEndpoint'],
+    where,
+  });
+  const statuses = {};
+  const requests = new Map();
+
+  for (let index = 0; index < apps.length; index += 6) {
+    await Promise.all(apps.slice(index, index + 6).map(async (app) => {
+      if (!requests.has(app.statusEndpoint)) {
+        requests.set(app.statusEndpoint, fetchStatus(app.statusEndpoint));
+      }
+      statuses[app.id] = await requests.get(app.statusEndpoint);
     }));
+  }
+
+  for (const [url, entry] of cache) {
+    if (entry.expires <= Date.now()) cache.delete(url);
   }
 
   res.setHeader('Cache-Control', 'no-store');
