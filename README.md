@@ -15,6 +15,44 @@ Flame is self-hosted startpage for your server. Its design is inspired (heavily)
 - ☀️ Weather widget with current temperature, cloud coverage and animated weather status
 - 🐳 Docker integration to automatically pick and add apps based on their labels
 
+## Fork Docker images and releases
+
+This fork publishes multi-platform Docker images to GitHub Container Registry for
+`linux/amd64` and `linux/arm64`.
+
+```sh
+docker pull ghcr.io/erathaowl/flame:latest
+docker run -d --name flame -p 5005:5005 \
+  -v /path/to/data:/app/data \
+  -e PASSWORD=change_me \
+  ghcr.io/erathaowl/flame:latest
+```
+
+### Automated Docker builds
+
+The [Docker Build workflow](.github/workflows/docker.yml) publishes an image on
+every branch push. The `master` branch publishes `latest`; other branches use
+a lowercase, Docker-safe version of their branch name (for example,
+`feature/login` becomes `feature-login`). In **Actions > Docker Build > Run workflow**,
+you can provide `custom_tag` to override the automatic tag. Without an override,
+the branch rules apply.
+
+### Releases
+
+Push a version tag to start the [Release workflow](.github/workflows/release.yml).
+Both `vX.Y.Z` and `vX.Y` are accepted. A short tag such as `v2.5` creates a
+`v2.5.0` GitHub Release and publishes the `v2.5.0` and `latest` Docker tags.
+
+```sh
+git tag v2.5.0
+git push origin v2.5.0
+docker pull ghcr.io/erathaowl/flame:v2.5.0
+```
+
+Release notes are generated from GitHub history. Existing releases are never
+overwritten. Build and release workflows use the repository's `GITHUB_TOKEN`
+with the required package or release permissions.
+
 ## Installation
 
 ### With Docker (recommended)
