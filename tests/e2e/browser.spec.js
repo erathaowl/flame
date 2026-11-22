@@ -1,5 +1,16 @@
 const { test, expect } = require('@playwright/test');
 
+const submit = async (page, method, route, locator) => {
+  await Promise.all([
+    page.waitForResponse((response) =>
+      new URL(response.url()).pathname === route &&
+      response.request().method() === method &&
+      response.ok()
+    ),
+    locator.click(),
+  ]);
+};
+
 const login = async (page) => {
   await page.goto('/settings/app');
   await page.getByLabel('Password').fill('e2e-only-password');
@@ -15,7 +26,8 @@ test('browser: application and bookmark management with YAML backup', async ({ p
   await test.step('enable custom sorting', async () => {
     await page.goto('/settings/general');
     await page.getByLabel('Sorting type').selectOption('orderId');
-    await page.getByRole('button', { name: 'Save changes' }).click();
+    await submit(page, 'PUT', '/api/config',
+      page.getByRole('button', { name: 'Save changes' }));
     await expect(page.getByLabel('Sorting type')).toHaveValue('orderId');
   });
 
@@ -24,12 +36,14 @@ test('browser: application and bookmark management with YAML backup', async ({ p
     await page.getByText('Add', { exact: true }).click();
     await page.getByLabel('App name').fill('Browser App');
     await page.getByLabel('App URL').fill('https://browser.example.com');
-    await page.getByRole('button', { name: 'Add new application' }).click();
+    await submit(page, 'POST', '/api/apps',
+      page.getByRole('button', { name: 'Add new application' }));
     await page.reload();
     await expect(page.getByText('Browser App')).toBeVisible();
 
     await page.getByText('Edit', { exact: true }).click();
-    await page.getByRole('button', { name: 'Hide Browser App' }).click();
+    await submit(page, 'PUT', '/api/apps/1',
+      page.getByRole('button', { name: 'Hide Browser App' }));
     await expect(page.getByRole('button', { name: 'Show Browser App' })).toBeVisible();
   });
 
@@ -37,14 +51,16 @@ test('browser: application and bookmark management with YAML backup', async ({ p
     await page.goto('/bookmarks');
     await page.getByText('Add Category', { exact: true }).click();
     await page.getByLabel('Category Name').fill('Browser Category');
-    await page.getByRole('button', { name: 'Add new category' }).click();
+    await submit(page, 'POST', '/api/categories',
+      page.getByRole('button', { name: 'Add new category' }));
     await page.reload();
 
     await page.getByText('Add Bookmark', { exact: true }).click();
     await page.getByLabel('Bookmark Name').fill('Browser Bookmark');
     await page.getByLabel('Bookmark URL').fill('https://bookmark.example.com');
     await page.getByLabel('Bookmark Category').selectOption({ label: 'Browser Category' });
-    await page.getByRole('button', { name: 'Add new bookmark' }).click();
+    await submit(page, 'POST', '/api/bookmarks',
+      page.getByRole('button', { name: 'Add new bookmark' }));
     await page.reload();
     await expect(page.getByText('Browser Bookmark')).toBeVisible();
   });
@@ -81,11 +97,13 @@ test('browser: quote library and large clock layout', async ({ page }) => {
   await page.goto('/settings/interface');
 
   await page.getByLabel('Header layout').selectOption('1');
-  await page.getByRole('button', { name: 'Save changes' }).click();
+  await submit(page, 'PUT', '/api/config',
+    page.getByRole('button', { name: 'Save changes' }));
 
   const quotes = page.getByLabel('Quotes (one per line)');
   await quotes.fill('One deterministic browser quote');
-  await page.getByRole('button', { name: 'Save quotes' }).click();
+  await submit(page, 'PUT', '/api/quotes',
+    page.getByRole('button', { name: 'Save quotes' }));
   await expect(page.getByText('Saved 1 quotes')).toBeVisible();
 
   await page.goto('/');
@@ -94,7 +112,8 @@ test('browser: quote library and large clock layout', async ({ page }) => {
 
   await page.goto('/settings/interface');
   await page.getByLabel('Header layout').selectOption('0');
-  await page.getByRole('button', { name: 'Save changes' }).click();
+  await submit(page, 'PUT', '/api/config',
+    page.getByRole('button', { name: 'Save changes' }));
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText('One deterministic browser quote');
 });
