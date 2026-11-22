@@ -1,4 +1,4 @@
-### v2.4.2 (2026-11-22)
+### v2.5.0 (2026-11-22)
 - Added independent Gatus status URLs to applications, with green/yellow/red status indicators based on the most recent checks.
 - Added YAML export/import for applications, bookmark categories and bookmarks, preserving custom order, visibility, pinning and application status URLs.
 - Added an optional large clock with a compact quote in the homepage header.
