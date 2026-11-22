@@ -32,6 +32,5 @@ export interface Config {
   isKilometer: boolean;
   weatherData: WeatherData;
   hideDate: boolean;
-  gatusUrl: string;
   largeClock: boolean;
 }

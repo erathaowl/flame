@@ -17,7 +17,6 @@ export interface GeneralForm {
   useOrdering: string;
   appsSameTab: boolean;
   bookmarksSameTab: boolean;
-  gatusUrl: string;
 }
 
 export interface UISettingsForm {

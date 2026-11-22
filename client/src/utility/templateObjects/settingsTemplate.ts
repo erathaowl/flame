@@ -40,7 +40,6 @@ export const generalSettingsTemplate: GeneralForm = {
   useOrdering: 'createdAt',
   appsSameTab: false,
   bookmarksSameTab: false,
-  gatusUrl: '',
 };
 
 export const dockerSettingsTemplate: DockerSettingsForm = {

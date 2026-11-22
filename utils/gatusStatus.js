@@ -1,15 +1,35 @@
-const getStatus = (endpoint) => {
-  const results = Array.isArray(endpoint.results) ? endpoint.results : [];
-  if (!results.length) return 'yellow';
+const getStatus = (payload) => {
+  if (!payload || Array.isArray(payload) || !Array.isArray(payload.results)) {
+    return 'yellow';
+  }
 
-  const recent = results
-    .filter((result) => typeof result.success === 'boolean')
-    .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0))
+  const results = payload.results
+    .filter((result) =>
+      result && typeof result.success === 'boolean' &&
+      typeof result.timestamp === 'string' &&
+      Number.isFinite(Date.parse(result.timestamp))
+    )
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
     .slice(0, 3);
 
-  if (!recent.length) return 'yellow';
-  if (!recent[0].success) return 'red';
-  return recent.some((result) => !result.success) ? 'yellow' : 'green';
+  if (!results.length) return 'yellow';
+  if (!results[0].success) return 'red';
+  return results.some((result) => !result.success) ? 'yellow' : 'green';
 };
 
-module.exports = { getStatus };
+const isGatusUrl = (value) => {
+  try {
+    const url = new URL(value);
+    return (
+      ['http:', 'https:'].includes(url.protocol) &&
+      !url.username &&
+      !url.password &&
+      !url.hash &&
+      /^\/api\/v1\/endpoints\/[^/]+\/statuses\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+};
+
+module.exports = { getStatus, isGatusUrl };

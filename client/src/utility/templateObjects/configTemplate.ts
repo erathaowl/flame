@@ -33,6 +33,5 @@ export const configTemplate: Config = {
   isKilometer: true,
   weatherData: 'cloud',
   hideDate: false,
-  gatusUrl: '',
   largeClock: false,
 };

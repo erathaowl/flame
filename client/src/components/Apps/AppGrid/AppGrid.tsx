@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { State } from '../../../store/reducers';
 import classes from './AppGrid.module.css';
 import { Link } from 'react-router-dom';
 import { App } from '../../../interfaces/App';
@@ -17,11 +15,14 @@ interface Props {
 }
 
 export const AppGrid = (props: Props): JSX.Element => {
-  const { gatusUrl } = useSelector((state: State) => state.config.config);
-  const [statuses, setStatuses] = useState<Record<string, AppStatus>>({});
+  const [statuses, setStatuses] = useState<Record<number, AppStatus>>({});
+  const monitored = props.apps
+    .filter((app) => app.statusEndpoint)
+    .map((app) => `${app.id}:${app.statusEndpoint}`)
+    .join('|');
 
   useEffect(() => {
-    if (!gatusUrl || !props.apps.some((app) => app.statusEndpoint)) {
+    if (!monitored) {
       setStatuses({});
       return;
     }
@@ -29,7 +30,7 @@ export const AppGrid = (props: Props): JSX.Element => {
     let active = true;
     const refresh = async () => {
       try {
-        const response = await axios.get<{ data: Record<string, AppStatus> }>('/api/status');
+        const response = await axios.get<{ data: Record<number, AppStatus> }>('/api/status');
         if (active) setStatuses(response.data.data);
       } catch {
         if (active) setStatuses({});
@@ -42,7 +43,7 @@ export const AppGrid = (props: Props): JSX.Element => {
       active = false;
       window.clearInterval(timer);
     };
-  }, [gatusUrl, props.apps.some((app) => !!app.statusEndpoint)]);
+  }, [monitored]);
 
   if (props.searching && !props.apps.length) {
     return <Message>No apps match your search criteria</Message>;
@@ -68,7 +69,7 @@ export const AppGrid = (props: Props): JSX.Element => {
         <AppCard
           key={app.id}
           app={app}
-          status={app.statusEndpoint ? statuses[app.statusEndpoint] || 'yellow' : undefined}
+          status={app.statusEndpoint ? statuses[app.id] || 'yellow' : undefined}
         />
       ))}
     </div>

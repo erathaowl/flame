@@ -152,16 +152,17 @@ export const AppForm = ({ modalHandler }: Props): JSX.Element => {
 
       {/* GATUS STATUS */}
       <InputGroup>
-        <label htmlFor="statusEndpoint">Gatus endpoint key (optional)</label>
+        <label htmlFor="statusEndpoint">Gatus status URL (optional)</label>
         <input
           type="text"
           name="statusEndpoint"
           id="statusEndpoint"
-          placeholder="production_my-service"
+          placeholder="https://status.example.com/api/v1/endpoints/core_service/statuses"
+          pattern="https?://.+/api/v1/endpoints/[^/]+/statuses/?"
           value={formData.statusEndpoint || ''}
           onChange={(e) => inputChangeHandler(e)}
         />
-        <span>Set the Gatus instance URL in General settings. Leave this field empty to hide the status indicator.</span>
+        <span>Paste the complete Gatus API URL for this application. Leave empty to hide the indicator.</span>
       </InputGroup>
 
       {/* ICON */}

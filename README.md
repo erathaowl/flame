@@ -56,6 +56,63 @@ Release notes are generated from GitHub history. Existing releases are never
 overwritten. Build and release workflows use the repository's `GITHUB_TOKEN`
 with the required package or release permissions.
 
+## Application status via Gatus
+
+Each application can have its **own Gatus status URL** in the application editor.
+There is no global Gatus URL: multiple applications may use different Gatus instances.
+Paste the complete endpoint-specific read-only API URL:
+
+```text
+https://status.example.com/api/v1/endpoints/core_backend/statuses
+```
+
+This is the documented Gatus endpoint pattern
+[`/api/v1/endpoints/{group}_{endpoint}/statuses`](https://github.com/TwiN/gatus#api).
+Use the group and endpoint key shown in your Gatus instance. The complete
+`/api/v1/endpoints/statuses` URL returning all endpoints is **not** accepted.
+
+The endpoint must respond to an HTTP GET with status `200` and a Gatus
+**EndpointStatus JSON object**. Example:
+
+```json
+{
+  "name": "backend",
+  "group": "core",
+  "key": "core_backend",
+  "results": [
+    {
+      "timestamp": "2026-11-22T16:00:00Z",
+      "success": true,
+      "status": 200,
+      "duration": 12000000,
+      "conditionResults": [
+        { "condition": "[STATUS] == 200", "success": true }
+      ]
+    }
+  ]
+}
+```
+
+`results[].success` and `results[].timestamp` determine the indicator,
+using the three most recent checks. The other fields follow Gatus's native
+response and are optional for Flame:
+
+- **Green**: latest and recent checks succeed
+- **Yellow**: latest check succeeds but a recent check failed, or the API is
+  unreachable, empty, malformed or not yet available
+- **Red**: most recent check failed
+
+Flame queries these URLs on the **server**, with a five-second timeout, no
+HTTP redirects, a 256 KB response limit and a 30-second cache. The dashboard
+refreshes every 60 seconds. The configured endpoint must be reachable from
+the Flame server/container. URLs must use HTTP or HTTPS, without credentials
+or fragments, and match the Gatus single-endpoint status path. Because the
+server makes requests to these URLs, only administrators should edit them.
+
+Gatus response fields are documented in the
+[official Gatus SDK EndpointStatus and EndpointResult definitions](https://github.com/TwiN/gatus-sdk/blob/master/models.go).
+An empty URL hides the status indicator.
+
 ## Installation
 
 ### With Docker (recommended)

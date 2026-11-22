@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: '20'
       - name: Test management controllers
-        run: node --test tests/management.test.js
+        run: node --test tests/*.test.js
 
   frontend:
     runs-on: ubuntu-24.04
