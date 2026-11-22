@@ -1,10 +1,11 @@
+import { DroppableProvided } from 'react-beautiful-dnd';
 import classes from './Table.module.css';
 
 interface Props {
   children: React.ReactNode;
   headers: string[];
   innerRef?: (element: HTMLElement | null) => void;
-  droppableProps?: React.HTMLAttributes<HTMLTableSectionElement>;
+  droppableProps?: DroppableProvided['droppableProps'];
   placeholder?: React.ReactNode;
 }
 
