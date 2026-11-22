@@ -1,3 +1,11 @@
+### v2.5.1 (2026-11-22)
+- Consolidated application, bookmark and category reorder handlers into one tested implementation.
+- Simplified application and category queries and removed redundant Docker/Kubernetes synchronization logic.
+- Reduced Gatus database reads, reused requests for shared monitoring URLs and cleaned up expired cache entries.
+- Optimized YAML backup import with bulk database operations and simplified export ordering.
+- Simplified homepage header time updates and fixed missing-application error handling.
+- Expanded regression coverage for YAML backup consistency and added automated backend syntax checks.
+
 ### v2.5.0 (2026-11-22)
 - Added independent Gatus status URLs to applications, with green/yellow/red status indicators based on the most recent checks.
 - Added YAML export/import for applications, bookmark categories and bookmarks, preserving custom order, visibility, pinning and application status URLs.
