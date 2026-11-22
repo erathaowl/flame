@@ -118,3 +118,60 @@ test('browser: quote library and large clock layout', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText('One deterministic browser quote');
 });
+
+test('browser: keyboard reordering persists the new application order', async ({ page }) => {
+  await login(page);
+  const token = await page.evaluate(() => localStorage.getItem('token'));
+  const headers = { 'Authorization-Flame': `Bearer ${token}` };
+
+  const updated = await page.request.put('/api/config', {
+    headers,
+    data: { useOrdering: 'orderId' },
+  });
+  expect(updated.ok()).toBe(true);
+
+  const createApp = async (name) => {
+    const response = await page.request.post('/api/apps', {
+      headers,
+      data: {
+        name,
+        url: `https://${name.toLowerCase().replace(/ /g, '-')}.example.com`,
+        icon: 'server',
+        isPublic: true,
+      },
+    });
+    expect(response.status()).toBe(201);
+    return (await response.json()).data;
+  };
+
+  const alpha = await createApp('Reorder Alpha');
+  const beta = await createApp('Reorder Beta');
+
+  await page.goto('/applications');
+  await page.getByText('Edit', { exact: true }).click();
+
+  const handle = page.locator(
+    `[data-rbd-drag-handle-draggable-id="${alpha.id}"]`
+  );
+  await expect(handle).toBeVisible();
+
+  const saved = page.waitForResponse((response) =>
+    new URL(response.url()).pathname === '/api/apps/0/reorder' &&
+    response.request().method() === 'PUT' &&
+    response.ok()
+  );
+
+  await handle.focus();
+  await handle.press('Space');
+  await handle.press('ArrowDown');
+  await handle.press('Space');
+  await saved;
+
+  const response = await page.request.get('/api/apps', { headers });
+  const apps = (await response.json()).data;
+  const first = apps.findIndex((app) => app.id === beta.id);
+  const second = apps.findIndex((app) => app.id === alpha.id);
+
+  expect(first).toBeGreaterThanOrEqual(0);
+  expect(second).toBe(first + 1);
+});
