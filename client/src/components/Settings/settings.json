@@ -26,6 +26,11 @@
       "authRequired": true
     },
     {
+      "name": "Backup",
+      "dest": "/settings/backup",
+      "authRequired": true
+    },
+    {
       "name": "CSS",
       "dest": "/settings/css",
       "authRequired": true
