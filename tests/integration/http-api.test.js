@@ -185,6 +185,9 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
 
       assert.deepEqual((await ok('GET', '/api/bookmarks', undefined, false))
         .map((item) => item.name), ['Public Bookmark']);
+      assert.equal((await request('GET', `/api/bookmarks/${insidePrivate.id}`)).status, 404);
+      assert.equal((await ok('GET', `/api/bookmarks/${insidePrivate.id}`)).name,
+        'Private Category Bookmark');
 
       await ok('PUT', `/api/apps/${first.id}`, { isPublic: false });
       const changed = await ok('GET', `/api/apps/${first.id}`);

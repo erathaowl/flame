@@ -1,5 +1,6 @@
 const asyncWrapper = require('../../middleware/asyncWrapper');
 const Bookmark = require('../../models/Bookmark');
+const Category = require('../../models/Category');
 const { Sequelize } = require('sequelize');
 const loadConfig = require('../../utils/loadConfig');
 
@@ -14,12 +15,18 @@ const getAllBookmarks = asyncWrapper(async (req, res, next) => {
 
   const order =
     orderType == 'name'
-      ? [[Sequelize.fn('lower', Sequelize.col('name')), 'ASC']]
+      ? [[Sequelize.fn('lower', Sequelize.col('Bookmark.name')), 'ASC']]
       : [[orderType, 'ASC']];
 
   const bookmarks = await Bookmark.findAll({
     order,
     where,
+    include: req.isAuthenticated ? [] : [{
+      model: Category,
+      attributes: [],
+      required: true,
+      where: { isPublic: true },
+    }],
   });
 
   res.status(200).json({
