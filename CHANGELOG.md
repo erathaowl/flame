@@ -1,3 +1,10 @@
+### v2.4.1 (2026-11-22)
+- Fixed application, bookmark and category reordering with validated, transactional database updates.
+- Fixed drag-and-drop table behavior and visibility toggle persistence.
+- Preserved manual application visibility when Docker/Kubernetes integrations provide no visibility label.
+- Improved add/edit/delete error messages and added regression tests.
+- Added automated Docker image publication on GHCR and versioned release workflows.
+
 ### v2.4.0 (2026-04-24)
 - Fixed high severity authentication security issues ([#465](https://github.com/pawelmalak/flame/issues/465))
 

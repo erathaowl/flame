@@ -42,6 +42,9 @@ the branch rules apply.
 Push a version tag to start the [Release workflow](.github/workflows/release.yml).
 Both `vX.Y.Z` and `vX.Y` are accepted. A short tag such as `v2.5` creates a
 `v2.5.0` GitHub Release and publishes the `v2.5.0` and `latest` Docker tags.
+The workflow also accepts a release request committed to
+`.github/release-request.txt` on `master`. The first line specifies the
+release version, and the workflow creates the normalized Git tag.
 
 ```sh
 git tag v2.5.0
