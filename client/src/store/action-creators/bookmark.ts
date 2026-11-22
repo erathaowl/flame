@@ -75,7 +75,11 @@ export const addCategory =
 
       dispatch<any>(sortCategories());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add category' },
+      });
     }
   };
 
@@ -104,7 +108,11 @@ export const addBookmark =
 
       dispatch<any>(sortBookmarks(res.data.data.categoryId));
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add bookmark' },
+      });
     }
   };
 
@@ -135,7 +143,11 @@ export const pinCategory =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to change category pin' },
+      });
     }
   };
 
@@ -159,12 +171,16 @@ export const deleteCategory =
         payload: id,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete category' },
+      });
     }
   };
 
 export const updateCategory =
-  (id: number, formData: NewCategory) =>
+  (id: number, formData: Partial<NewCategory>) =>
   async (dispatch: Dispatch<UpdateCategoryAction>) => {
     try {
       const res = await axios.put<ApiResponse<Category>>(
@@ -188,7 +204,11 @@ export const updateCategory =
 
       dispatch<any>(sortCategories());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update category' },
+      });
     }
   };
 
@@ -216,14 +236,18 @@ export const deleteBookmark =
         },
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete bookmark' },
+      });
     }
   };
 
 export const updateBookmark =
   (
     bookmarkId: number,
-    formData: NewBookmark | FormData,
+    formData: Partial<NewBookmark> | FormData,
     category: {
       prev: number;
       curr: number;
@@ -277,7 +301,11 @@ export const updateBookmark =
 
       dispatch<any>(sortBookmarks(res.data.data.categoryId));
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update bookmark' },
+      });
     }
   };
 
@@ -323,10 +351,15 @@ export const reorderCategories =
 
       dispatch({
         type: ActionType.reorderCategories,
-        payload: categories,
+        payload: categories.map((category, index) => ({ ...category, orderId: index + 1 })),
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save category order' },
+      });
+      dispatch<any>(getCategories());
     }
   };
 
@@ -376,10 +409,18 @@ export const reorderBookmarks =
 
       dispatch({
         type: ActionType.reorderBookmarks,
-        payload: { bookmarks, categoryId },
+        payload: {
+          bookmarks: bookmarks.map((bookmark, index) => ({ ...bookmark, orderId: index + 1 })),
+          categoryId,
+        },
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save bookmark order' },
+      });
+      dispatch<any>(getCategories());
     }
   };
 

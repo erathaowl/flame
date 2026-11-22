@@ -18,9 +18,11 @@ const createApp = asyncWrapper(async (req, res, next) => {
     body.icon = req.file.filename;
   }
 
+  const lastOrder = await App.max('orderId');
   const app = await App.create({
     ...body,
     isPinned: pinAppsByDefault,
+    orderId: (lastOrder || 0) + 1,
   });
 
   res.status(201).json({

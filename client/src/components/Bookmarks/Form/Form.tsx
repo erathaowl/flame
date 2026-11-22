@@ -1,5 +1,6 @@
 // Typescript
 import { ContentType } from '../Bookmarks';
+import { Category } from '../../../interfaces';
 
 // Utils
 import { CategoryForm } from './CategoryForm';
@@ -13,14 +14,15 @@ interface Props {
   modalHandler: () => void;
   contentType: ContentType;
   inUpdate?: boolean;
+  categoryToUpdate?: Category | null;
 }
 
 export const Form = (props: Props): JSX.Element => {
-  const { categoryInEdit, bookmarkInEdit } = useSelector(
+  const { bookmarkInEdit } = useSelector(
     (state: State) => state.bookmarks
   );
 
-  const { modalHandler, contentType, inUpdate } = props;
+  const { modalHandler, contentType, inUpdate, categoryToUpdate } = props;
 
   return (
     <Fragment>
@@ -39,7 +41,7 @@ export const Form = (props: Props): JSX.Element => {
           {contentType === ContentType.category ? (
             <CategoryForm
               modalHandler={modalHandler}
-              category={categoryInEdit || categoryTemplate}
+              category={categoryToUpdate || categoryTemplate}
             />
           ) : (
             <BookmarksForm

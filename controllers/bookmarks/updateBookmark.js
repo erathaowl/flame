@@ -19,10 +19,11 @@ const updateBookmark = asyncWrapper(async (req, res, next) => {
     );
   }
 
-  let body = {
-    ...req.body,
-    categoryId: parseInt(req.body.categoryId),
-  };
+  let body = { ...req.body };
+
+  if (body.categoryId !== undefined) {
+    body.categoryId = parseInt(body.categoryId, 10);
+  }
 
   if (body.icon) {
     body.icon = body.icon.trim();

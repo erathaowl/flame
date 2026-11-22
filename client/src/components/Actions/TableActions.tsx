@@ -27,54 +27,53 @@ export const TableActions = (props: Props): JSX.Element => {
     showPin = true,
   } = props;
 
-  const _pinHandler = pinHanlder || function () {};
-
   return (
-    <td className={classes.TableActions}>
-      {/* DELETE */}
-      <div
-        className={classes.TableAction}
-        onClick={() => deleteHandler(entity.id, entity.name)}
-        tabIndex={0}
-      >
-        <Icon icon="mdiDelete" />
-      </div>
-
-      {/* UPDATE */}
-      <div
-        className={classes.TableAction}
-        onClick={() => updateHandler(entity.id)}
-        tabIndex={0}
-      >
-        <Icon icon="mdiPencil" />
-      </div>
-
-      {/* PIN */}
-      {showPin && (
-        <div
+    <td>
+      <div className={classes.TableActions}>
+        <button
+          type="button"
           className={classes.TableAction}
-          onClick={() => _pinHandler(entity.id)}
-          tabIndex={0}
+          title="Delete"
+          aria-label={`Delete ${entity.name}`}
+          onClick={() => deleteHandler(entity.id, entity.name)}
         >
-          {entity.isPinned ? (
-            <Icon icon="mdiPin" />
-          ) : (
-            <Icon icon="mdiPinOff" color="var(--color-accent)" />
-          )}
-        </div>
-      )}
-
-      {/* VISIBILITY */}
-      <div
-        className={classes.TableAction}
-        onClick={() => changeVisibilty(entity.id)}
-        tabIndex={0}
-      >
-        {entity.isPublic ? (
-          <Icon icon="mdiEye" />
-        ) : (
-          <Icon icon="mdiEyeOff" color="var(--color-accent)" />
+          <Icon icon="mdiDelete" />
+        </button>
+        <button
+          type="button"
+          className={classes.TableAction}
+          title="Edit"
+          aria-label={`Edit ${entity.name}`}
+          onClick={() => updateHandler(entity.id)}
+        >
+          <Icon icon="mdiPencil" />
+        </button>
+        {showPin && pinHanlder && (
+          <button
+            type="button"
+            className={classes.TableAction}
+            title={entity.isPinned ? 'Unpin' : 'Pin'}
+            aria-label={`${entity.isPinned ? 'Unpin' : 'Pin'} ${entity.name}`}
+            onClick={() => pinHanlder(entity.id)}
+          >
+            <Icon
+              icon={entity.isPinned ? 'mdiPin' : 'mdiPinOff'}
+              color={entity.isPinned ? undefined : 'var(--color-accent)'}
+            />
+          </button>
         )}
+        <button
+          type="button"
+          className={classes.TableAction}
+          title={entity.isPublic ? 'Hide' : 'Show'}
+          aria-label={`${entity.isPublic ? 'Hide' : 'Show'} ${entity.name}`}
+          onClick={() => changeVisibilty(entity.id)}
+        >
+          <Icon
+            icon={entity.isPublic ? 'mdiEye' : 'mdiEyeOff'}
+            color={entity.isPublic ? undefined : 'var(--color-accent)'}
+          />
+        </button>
       </div>
     </td>
   );

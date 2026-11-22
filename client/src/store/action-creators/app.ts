@@ -66,7 +66,11 @@ export const pinApp =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to change application pin' },
+      });
     }
   };
 
@@ -93,7 +97,11 @@ export const addApp =
       // Sort apps
       dispatch<any>(sortApps());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to add application' },
+      });
     }
   };
 
@@ -117,12 +125,16 @@ export const deleteApp =
         payload: id,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to delete application' },
+      });
     }
   };
 
 export const updateApp =
-  (id: number, formData: NewApp | FormData) =>
+  (id: number, formData: Partial<NewApp> | FormData) =>
   async (dispatch: Dispatch<UpdateAppAction>) => {
     try {
       const res = await axios.put<ApiResponse<App>>(
@@ -149,7 +161,11 @@ export const updateApp =
       // Sort apps
       dispatch<any>(sortApps());
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to update application' },
+      });
     }
   };
 
@@ -178,10 +194,15 @@ export const reorderApps =
 
       dispatch({
         type: ActionType.reorderApps,
-        payload: apps,
+        payload: apps.map((app, index) => ({ ...app, orderId: index + 1 })),
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save application order' },
+      });
+      dispatch<any>(getApps());
     }
   };
 

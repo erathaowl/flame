@@ -8,9 +8,11 @@ const loadConfig = require('../../utils/loadConfig');
 const createCategory = asyncWrapper(async (req, res, next) => {
   const { pinCategoriesByDefault: pinCategories } = await loadConfig();
 
+  const lastOrder = await Category.max('orderId');
   const category = await Category.create({
     ...req.body,
     isPinned: pinCategories,
+    orderId: (lastOrder || 0) + 1,
   });
 
   res.status(201).json({
