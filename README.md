@@ -4,7 +4,7 @@
 
 ## Description
 
-Flame is self-hosted startpage for your server. Its design is inspired (heavily) by [SUI](https://github.com/jeroenpardon/sui). Flame is very easy to setup and use. With built-in editors, it allows you to setup your very own application hub in no time - no file editing necessary.
+Flame is a self-hosted start page for your server. Its design is inspired (heavily) by [SUI](https://github.com/jeroenpardon/sui). Flame is very easy to setup and use. With built-in editors, it allows you to setup your very own application hub in no time - no file editing necessary.
 
 ## Functionality
 - 📝 Create, update, delete your applications and bookmarks directly from the app using built-in GUI editors
@@ -58,77 +58,20 @@ with the required package or release permissions.
 
 ## Application status via Gatus
 
-Each application can have its **own Gatus status URL** in the application editor.
-There is no global Gatus URL: multiple applications may use different Gatus instances.
-Paste the complete endpoint-specific read-only API URL:
-
-```text
-https://status.example.com/api/v1/endpoints/core_backend/statuses
-```
-
-This is the documented Gatus endpoint pattern
-[`/api/v1/endpoints/{group}_{endpoint}/statuses`](https://github.com/TwiN/gatus#api).
-Use the group and endpoint key shown in your Gatus instance. The complete
-`/api/v1/endpoints/statuses` URL returning all endpoints is **not** accepted.
-
-The endpoint must respond to an HTTP GET with status `200` and a Gatus
-**EndpointStatus JSON object**. Example:
-
-```json
-{
-  "name": "backend",
-  "group": "core",
-  "key": "core_backend",
-  "results": [
-    {
-      "timestamp": "2026-11-22T16:00:00Z",
-      "success": true,
-      "status": 200,
-      "duration": 12000000,
-      "conditionResults": [
-        { "condition": "[STATUS] == 200", "success": true }
-      ]
-    }
-  ]
-}
-```
-
-`results[].success` and `results[].timestamp` determine the indicator,
-using the three most recent checks. The other fields follow Gatus's native
-response and are optional for Flame:
-
-- **Green**: latest and recent checks succeed
-- **Yellow**: latest check succeeds but a recent check failed, or the API is
-  unreachable, empty, malformed or not yet available
-- **Red**: most recent check failed
-
-Flame queries these URLs on the **server**, with a five-second timeout, no
-HTTP redirects, a 256 KB response limit and a 30-second cache. The dashboard
-refreshes every 60 seconds. The configured endpoint must be reachable from
-the Flame server/container. URLs must use HTTP or HTTPS, without credentials
-or fragments, and match the Gatus single-endpoint status path. Because the
-server makes requests to these URLs, only administrators should edit them.
-
-Gatus response fields are documented in the
-[official Gatus SDK EndpointStatus and EndpointResult definitions](https://github.com/TwiN/gatus-sdk/blob/master/models.go).
-An empty URL hides the status indicator.
+Configure each application's own endpoint URL in the application editor,
+for example `https://status.example.com/api/v1/endpoints/core_backend/statuses`.
+Flame displays green, yellow or red according to recent Gatus checks.
+See [status monitoring reference](docs/status-monitoring.md) for the
+required JSON format, caching, availability and security considerations.
 
 ## YAML backup and restore
 
-Open **Settings > Backup** to export all applications, bookmark categories
-and bookmarks as a single YAML file. The export includes names, URLs, icons
-(references), descriptions, visibility, pinning, sorting order, and the Gatus
-status URL assigned to each application.
+Use **Settings > Backup** to export or replace applications, categories and
+bookmarks in YAML, preserving order, visibility, pinning and status URLs.
+The import is transactional in SQLite. Uploaded icon binaries, quotes and
+other settings are outside the YAML backup.
 
-Importing a YAML file **replaces** all current applications, categories,
-and bookmarks. The interface requires confirmation before replacing data.
-Export a backup before importing. Custom icon **files** stored in
-`/app/data/uploads` are not embedded in the YAML; preserve that directory
-separately when migrating installations.
-
-The format includes a `version: 1` field, a `sorting` key, and the
-`applications` and `categories` lists. Each category contains a
-`bookmarks` list. Entity database IDs are recreated on import.
+See [backup schema and examples](docs/yaml-backup.md).
 
 ## Header clock and quote library
 
@@ -168,92 +111,70 @@ pre-migration database and configuration backup together.
 
 ## Installation
 
-### With Docker (recommended)
+### Docker / GHCR (recommended)
 
-[Docker Hub link](https://hub.docker.com/r/pawelmalak/flame)
+Use the fork's published multi-platform images for `linux/amd64` or
+`linux/arm64`. Select a version tag for predictable updates, or use
+`latest` to follow the current `master` build.
 
 ```sh
-docker pull pawelmalak/flame
+docker pull ghcr.io/erathaowl/flame:v2.5.1
 
-# for ARM architecture (e.g. RaspberryPi)
-docker pull pawelmalak/flame:multiarch
-
-# installing specific version
-docker pull pawelmalak/flame:2.0.0
+docker run -d --name flame -p 5005:5005 \
+  -v /path/to/data:/app/data \
+  -e PASSWORD=change_me \
+  --restart unless-stopped \
+  ghcr.io/erathaowl/flame:v2.5.1
 ```
 
-#### Deployment
+Use a strong password, protect access to port 5005, and keep the persistent
+`/app/data` directory backed up. The current `master` branch includes
+the SQLite settings migration, which is newer than the published `v2.5.1`
+release. Review [upgrade guidance](docs/upgrade.md) before deploying it.
+
+A sample [Docker Compose configuration](.docker/docker-compose.yml) is
+included. To enable automatic Docker app discovery, explicitly mount
+`/var/run/docker.sock` (grants powerful access to the host) and enable
+Docker integration in settings. Prefer the local socket or a properly
+secured remote Docker endpoint; avoid exposing the Docker Engine over
+unencrypted TCP.
+
+#### Build locally
 
 ```sh
-# run container
-docker run -p 5005:5005 -v /path/to/data:/app/data -e PASSWORD=change_me pawelmalak/flame
-```
-
-#### Building images
-
-```sh
-# build image for amd64 only
 docker build -t flame -f .docker/Dockerfile .
-
-# build multiarch image for amd64, armv7 and arm64
-# building failed multiple times with 2GB memory usage limit so you might want to increase it
-docker buildx build \
-  --platform linux/arm/v7,linux/arm64,linux/amd64 \
-  -f .docker/Dockerfile.multiarch \
-  -t flame:multiarch .
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f .docker/Dockerfile.multiarch -t flame:multiarch .
 ```
 
-#### Docker-Compose
+#### Docker secrets
+
+A Docker secret may be supplied with `PASSWORD_FILE`. In that case, keep
+the password outside the image and refer to the mounted secret file.
 
 ```yaml
-version: '3.6'
-
 services:
   flame:
-    image: pawelmalak/flame
-    container_name: flame
-    volumes:
-      - /path/to/host/data:/app/data
-      - /var/run/docker.sock:/var/run/docker.sock # optional but required for Docker integration
+    image: ghcr.io/erathaowl/flame:v2.5.1
     ports:
-      - 5005:5005
+      - "5005:5005"
+    volumes:
+      - /path/to/data:/app/data
     secrets:
-      - password # optional but required for (1)
+      - flame_password
     environment:
-      - PASSWORD=change_me
-      - PASSWORD_FILE=/run/secrets/password # optional but required for (1)
-    restart: unless-stopped
+      PASSWORD_FILE: /run/secrets/flame_password
 
-# optional but required for Docker secrets (1)
 secrets:
-  password:
-    file: /path/to/secrets/password
-```
-
-##### Docker Secrets
-
-All environment variables can be overwritten by appending `_FILE` to the variable value. For example, you can use `PASSWORD_FILE` to pass through a docker secret instead of `PASSWORD`. If both `PASSWORD` and `PASSWORD_FILE` are set, the docker secret will take precedent.
-
-```bash
-# ./secrets/flame_password
-my_custom_secret_password_123
-
-# ./docker-compose.yml
-secrets:
-  password:
-    file: ./secrets/flame_password
-```
-
-#### Skaffold
-
-```sh
-# use skaffold
-skaffold dev
+  flame_password:
+    file: /path/to/secrets/flame_password
 ```
 
 ### Without Docker
 
-Follow instructions from wiki: [Installation without Docker](https://github.com/pawelmalak/flame/wiki/Installation-without-docker)
+Use the [upstream installation guide](https://github.com/pawelmalak/flame/wiki/Installation-without-docker)
+as background, then configure this fork's persistent `data` directory,
+`PASSWORD`, and `SECRET` as described in [upgrade guidance](docs/upgrade.md).
 
 ## Development
 
@@ -274,7 +195,7 @@ Follow instructions from wiki: [Installation without Docker](https://github.com/
 
 ```sh
 # clone repository
-git clone https://github.com/pawelmalak/flame
+git clone https://github.com/erathaowl/flame
 cd flame
 
 # run only once
@@ -283,6 +204,22 @@ npm run dev-init
 # start backend and frontend development servers
 npm run dev
 ```
+
+### Testing
+
+Run unit and SQLite/API integration tests with `npm ci` followed by
+`node --test tests/*.test.js tests/integration/*.test.js`.
+The CI workflow also runs the React test suite and builds the frontend.
+A Chromium browser test job exercises the user interface.
+
+See [test instructions and coverage matrix](docs/testing.md).
+
+## Documentation
+
+- [YAML backup schema and restore behavior](docs/yaml-backup.md)
+- [Application status monitoring with Gatus](docs/status-monitoring.md)
+- [Settings migration and upgrade/rollback](docs/upgrade.md)
+- [Tests, CI and known coverage gaps](docs/testing.md)
 
 ## Screenshots
 
@@ -317,66 +254,45 @@ For list of supported search engines, shortcuts and more about searching functio
 
 ### Docker integration
 
-In order to use the Docker integration, each container must have the following labels:
+Enable **Settings > Docker > Use Docker API** and give Flame access to the
+Docker daemon. Add labels to the containers that should appear:
 
-```yml
+```yaml
 labels:
-  - flame.type=application # "app" works too
-  - flame.name=My container
-  - flame.url=https://example.com
-  - flame.icon=icon-name # optional, default is "docker"
-# - flame.icon=custom to make changes in app. ie: custom icon upload
+  flame.type: application
+  flame.name: My service
+  flame.url: https://service.example.com
+  flame.icon: server
+  flame.visible: "true"
 ```
 
-> "Use Docker API" option must be enabled for this to work. You can find it in Settings > Docker
+Multiple applications can use semicolon-separated values. The `flame.visible`
+label is optional. If omitted, Flame preserves the app's manually chosen
+visibility during synchronization.
 
-You can also set up different apps in the same label adding `;` between each one.
-
-```yml
-labels:
-  - flame.type=application
-  - flame.name=First App;Second App
-  - flame.url=https://example1.com;https://example2.com
-  - flame.icon=icon-name1;icon-name2
-```
-
-If you want to use a remote docker host follow this instructions in the host:
-
-- Open the file `/lib/systemd/system/docker.service`, search for `ExecStart` and edit the value
-
-```text
-ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:${PORT} -H unix:///var/run/docker.sock
-```
-
->The above command will bind the docker engine server to the Unix socket as well as TCP port of your choice. “0.0.0.0” means docker-engine accepts connections from all IP addresses.
-
-- Restart the daemon and Docker service
-
-```shell
-sudo systemctl daemon-reload
-sudo service docker restart
-```
-
-- Test if it is working
-
-```shell
-curl http://${IP}:${PORT}/version
-```
+**Security:** Mounting the Docker socket gives the container access to
+the Docker daemon. Restrict this access and never expose an unauthenticated
+daemon over the network. Consult
+[Docker daemon security](https://docs.docker.com/engine/security/protect-access/)
+for securing remote API connections.
 
 ### Kubernetes integration
 
-In order to use the Kubernetes integration, each ingress must have the following annotations:
+Enable **Settings > Docker > Use Kubernetes Ingress API** and make sure the
+Flame Pod has permission to list Ingress objects. Annotate each Ingress:
 
-```yml
+```yaml
 metadata:
   annotations:
-  - flame.pawelmalak/type=application # "app" works too
-  - flame.pawelmalak/name=My container
-  - flame.pawelmalak/url=https://example.com
-  - flame.pawelmalak/icon=icon-name # optional, default is "kubernetes"
+    flame.pawelmalak/type: application
+    flame.pawelmalak/name: My service
+    flame.pawelmalak/url: https://service.example.com
+    flame.pawelmalak/icon: kubernetes
+    flame.pawelmalak/visible: "true"
 ```
 
-> "Use Kubernetes Ingress API" option must be enabled for this to work. You can find it in Settings > Docker
+The visibility annotation is optional; omitting it preserves an existing
+application's manually configured visibility.
 
 ### Import HTML Bookmarks (Experimental)
 
