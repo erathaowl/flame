@@ -13,6 +13,7 @@ const Sockets = require('./Sockets');
 
 // Utils
 const initApp = require('./utils/init');
+const normalizeTheme = require('./utils/init/normalizeTheme');
 const Logger = require('./utils/Logger');
 const logger = new Logger();
 
@@ -23,6 +24,7 @@ const logger = new Logger();
   await initApp();
   await connectDB();
   await associateModels();
+  await normalizeTheme();
   await jobs();
 
   // Create server for Express API and WebSockets

@@ -1,18 +1,17 @@
-const { readFile } = require('fs/promises');
-const checkFileExists = require('../utils/checkFileExists');
-const initConfig = require('../utils/init/initConfig');
+const Setting = require('../models/Setting');
+const defaults = require('./init/initialConfig.json');
 
-const loadConfig = async () => {
-  const configExists = await checkFileExists('data/config.json');
+const loadConfig = async (transaction) => {
+  const settings = await Setting.findAll({ raw: true, transaction });
+  const config = { ...defaults };
 
-  if (!configExists) {
-    await initConfig();
+  for (const { key, value, valueType } of settings) {
+    if (valueType === 'boolean') config[key] = value === 'true';
+    else if (valueType === 'number') config[key] = Number(value);
+    else config[key] = value;
   }
 
-  const config = await readFile('data/config.json', 'utf-8');
-  const parsedConfig = JSON.parse(config);
-
-  return parsedConfig;
+  return config;
 };
 
 module.exports = loadConfig;

@@ -1,11 +1,11 @@
 const express = require('express');
-const { readFile, writeFile } = require('fs/promises');
 const { auth, requireAuth, asyncWrapper } = require('../middleware');
 const { sequelize } = require('../db');
 const App = require('../models/App');
 const Category = require('../models/Category');
 const Bookmark = require('../models/Bookmark');
 const loadConfig = require('../utils/loadConfig');
+const saveConfig = require('../utils/saveConfig');
 const { parseBackup, exportBackup } = require('../utils/backupData');
 
 const router = express.Router();
@@ -53,11 +53,6 @@ router.post('/', express.text({
     return res.status(400).json({ success: false, error: error.message });
   }
 
-  const configFile = 'data/config.json';
-  const currentConfig = await readFile(configFile, 'utf8');
-  const config = JSON.parse(currentConfig);
-  config.useOrdering = data.sorting;
-
   await sequelize.transaction(async (transaction) => {
     await Bookmark.destroy({ where: {}, transaction });
     await Category.destroy({ where: {}, transaction });
@@ -74,9 +69,8 @@ router.post('/', express.text({
       );
     }
 
+    await saveConfig({ useOrdering: data.sorting }, transaction);
   });
-
-  await writeFile(configFile, JSON.stringify(config));
 
   return res.json({
     success: true,
