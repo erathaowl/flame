@@ -31,6 +31,11 @@ const App = sequelize.define(
       allowNull: true,
       defaultValue: 1,
     },
+    statusEndpoint: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: '',
+    },
     description: {
       type: DataTypes.STRING,
       allowNull: false,

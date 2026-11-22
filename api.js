@@ -16,6 +16,9 @@ api.use(express.json());
 
 // Link controllers with routes
 api.use('/api/apps', require('./routes/apps'));
+api.use('/api/status', require('./routes/status'));
+api.use('/api/quotes', require('./routes/quotes'));
+api.use('/api/backup', require('./routes/backup'));
 api.use('/api/config', require('./routes/config'));
 api.use('/api/weather', require('./routes/weather'));
 api.use('/api/categories', require('./routes/category'));
