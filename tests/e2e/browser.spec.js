@@ -5,6 +5,8 @@ const login = async (page) => {
   await page.getByLabel('Password').fill('e2e-only-password');
   await page.getByRole('button', { name: 'Login' }).click();
   await expect(page.getByText(/You are logged in/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(/You are logged in/)).toBeVisible();
 };
 
 test('browser: application and bookmark management with YAML backup', async ({ page, browser }) => {

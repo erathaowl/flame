@@ -70,6 +70,9 @@ export const authError =
   (dispatch: Dispatch<AuthErrorAction>) => {
     const apiError = error as AxiosError;
 
+    localStorage.removeItem('token');
+    dispatch({ type: ActionType.authError });
+
     if (showNotification) {
       dispatch<any>({
         type: ActionType.createNotification,

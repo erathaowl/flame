@@ -1,13 +1,11 @@
 import { useSelector } from 'react-redux';
 import { Redirect, Route, RouteProps } from 'react-router';
 import { State } from '../../store/reducers';
+import { Spinner } from '../UI';
 
-export const ProtectedRoute = ({ ...rest }: RouteProps) => {
-  const { isAuthenticated } = useSelector((state: State) => state.auth);
+export const ProtectedRoute = (props: RouteProps) => {
+  const { isAuthenticated, checking } = useSelector((state: State) => state.auth);
 
-  if (isAuthenticated) {
-    return <Route {...rest} />;
-  } else {
-    return <Redirect to="/settings/app" />;
-  }
+  if (checking) return <Spinner />;
+  return isAuthenticated ? <Route {...props} /> : <Redirect to="/settings/app" />;
 };

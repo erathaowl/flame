@@ -4,11 +4,13 @@ import { ActionType } from '../action-types';
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
+  checking: boolean;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
   token: null,
+  checking: Boolean(localStorage.getItem('token')),
 };
 
 export const authReducer = (
@@ -21,6 +23,7 @@ export const authReducer = (
         ...state,
         token: action.payload,
         isAuthenticated: true,
+        checking: false,
       };
 
     case ActionType.logout:
@@ -28,6 +31,7 @@ export const authReducer = (
         ...state,
         token: null,
         isAuthenticated: false,
+        checking: false,
       };
 
     case ActionType.autoLogin:
@@ -35,6 +39,7 @@ export const authReducer = (
         ...state,
         token: action.payload,
         isAuthenticated: true,
+        checking: false,
       };
 
     case ActionType.authError:
@@ -42,6 +47,7 @@ export const authReducer = (
         ...state,
         token: null,
         isAuthenticated: false,
+        checking: false,
       };
 
     default:
