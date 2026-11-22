@@ -1,1 +1,2 @@
 v2.5.0
+# Supersedes the prior v2.4.2 release request.
