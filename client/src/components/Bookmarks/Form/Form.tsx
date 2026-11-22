@@ -1,5 +1,6 @@
 // Typescript
 import { ContentType } from '../Bookmarks';
+import { Category } from '../../../interfaces';
 
 // Utils
 import { CategoryForm } from './CategoryForm';

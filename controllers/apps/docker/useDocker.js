@@ -93,7 +93,7 @@ const useDocker = async (apps) => {
           const urls = labels['flame.url'].split(';');
           let icons = '';
           let descriptions = '';
-          let visibility = '';
+          let visibility = [];
 
           if ('flame.icon' in labels) {
             icons = labels['flame.icon'].split(';');
@@ -107,14 +107,19 @@ const useDocker = async (apps) => {
             visibility = labels['flame.visible'].split(';');
           }
 
-          dockerApps.push({
+          const item = {
             name: names[i] || names[0],
             url: urls[i] || urls[0],
             icon: icons[i] || 'docker',
-            // Add description and visbility
             description: descriptions[i] || '',
-            isPublic: (visibility[i] && /^true$/.test(visibility[i]) ? visibility[i] : visibility[0]) || null,
-          });
+          };
+
+          const visibilityValue = visibility[i] || visibility[0];
+          if (visibilityValue !== undefined) {
+            item.isPublic = /^true$/i.test(visibilityValue) ? 1 : 0;
+          }
+
+          dockerApps.push(item);
         }
       }
     }
@@ -129,7 +134,7 @@ const useDocker = async (apps) => {
       // If app already exists, update it
       // Find by name or url
       if (apps.some((app) => app.name === item.name || app.url === item.url)) {
-        const app = apps.find((a) => a.name === item.name || app.url === item.url);
+        const app = apps.find((a) => a.name === item.name || a.url === item.url);
 
         if (
           item.icon === 'custom' ||
@@ -139,9 +144,8 @@ const useDocker = async (apps) => {
           await app.update({
             name: item.name,
             url: item.url,
-            // Add description and visbility
             description: item.description,
-            isPublic: item.isPublic,
+            ...(item.isPublic !== undefined ? { isPublic: item.isPublic } : {}),
             isPinned: true,
           });
         } else {

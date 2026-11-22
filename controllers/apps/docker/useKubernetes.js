@@ -39,14 +39,19 @@ const useKubernetes = async (apps) => {
         'flame.pawelmalak/url' in annotations &&
         /^app/.test(annotations['flame.pawelmalak/type'])
       ) {
-        kubernetesApps.push({
+        const item = {
           name: annotations['flame.pawelmalak/name'],
           url: annotations['flame.pawelmalak/url'],
           icon: annotations['flame.pawelmalak/icon'] || 'kubernetes',
-          // Add description and visibility
           description: annotations['flame.pawelmalak/description'] || '',
-          isPublic: (annotations['flame.pawelmalak/visible'] && /^true$/.test(annotations['flame.pawelmalak/visible']) ? 1 : 0),
-        });
+        };
+
+        const visibilityValue = annotations['flame.pawelmalak/visible'];
+        if (visibilityValue !== undefined) {
+          item.isPublic = /^true$/i.test(visibilityValue) ? 1 : 0;
+        }
+
+        kubernetesApps.push(item);
       }
     }
 
