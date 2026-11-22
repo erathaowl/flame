@@ -1,3 +1,12 @@
+### v2.6.0 (2026-11-22)
+- Migrated persistent application settings from data/config.json into a typed, per-key SQLite settings table, keeping existing values and defaults.
+- Made YAML restore atomic across applications, categories, bookmarks and sorting settings in one SQLite transaction.
+- Fixed public bookmark APIs leaking entries from private categories.
+- Fixed protected-page redirects during saved-session validation after page refresh.
+- Added real SQLite/HTTP integration tests covering authentication, access control, CRUD, visibility, ordering, Gatus, quotes, YAML backup and rollback.
+- Added Chromium end-to-end tests covering management, backup/restore, header layout, and keyboard drag-and-drop reordering.
+- Updated deployment, upgrade/rollback, YAML, Gatus and testing documentation for the fork.
+
 ### v2.5.1 (2026-11-22)
 - Consolidated application, bookmark and category reorder handlers into one tested implementation.
 - Simplified application and category queries and removed redundant Docker/Kubernetes synchronization logic.

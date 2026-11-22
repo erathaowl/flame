@@ -40,16 +40,16 @@ the branch rules apply.
 ### Releases
 
 Push a version tag to start the [Release workflow](.github/workflows/release.yml).
-Both `vX.Y.Z` and `vX.Y` are accepted. A short tag such as `v2.5` creates a
-`v2.5.0` GitHub Release and publishes the `v2.5.0` and `latest` Docker tags.
+Both `vX.Y.Z` and `vX.Y` are accepted. A short tag such as `v2.6` creates a
+`v2.6.0` GitHub Release and publishes the `v2.6.0` and `latest` Docker tags.
 The workflow also accepts a release request committed to
 `.github/release-request.txt` on `master`. The first line specifies the
 release version, and the workflow creates the normalized Git tag.
 
 ```sh
-git tag v2.5.0
-git push origin v2.5.0
-docker pull ghcr.io/erathaowl/flame:v2.5.0
+git tag v2.6.0
+git push origin v2.6.0
+docker pull ghcr.io/erathaowl/flame:v2.6.0
 ```
 
 Release notes are generated from GitHub history. Existing releases are never
@@ -87,7 +87,7 @@ limit.
 
 ## SQLite settings storage
 
-From the configuration migration following v2.5.1, Flame stores settings
+Starting with v2.6.0, Flame stores settings
 in the SQLite `settings` table. Each setting is a row with a `key`, text
 `value`, and `valueType` (`string`, `number`, or `boolean`). Applications,
 bookmarks, categories and quotes remain in their existing tables.
@@ -118,19 +118,19 @@ Use the fork's published multi-platform images for `linux/amd64` or
 `latest` to follow the current `master` build.
 
 ```sh
-docker pull ghcr.io/erathaowl/flame:v2.5.1
+docker pull ghcr.io/erathaowl/flame:v2.6.0
 
 docker run -d --name flame -p 5005:5005 \
   -v /path/to/data:/app/data \
   -e PASSWORD=change_me \
   --restart unless-stopped \
-  ghcr.io/erathaowl/flame:v2.5.1
+  ghcr.io/erathaowl/flame:v2.6.0
 ```
 
 Use a strong password, protect access to port 5005, and keep the persistent
-`/app/data` directory backed up. The current `master` branch includes
-the SQLite settings migration, which is newer than the published `v2.5.1`
-release. Review [upgrade guidance](docs/upgrade.md) before deploying it.
+`/app/data` directory backed up. Release `v2.6.0` introduces the SQLite
+settings migration; review [upgrade guidance](docs/upgrade.md) and back up
+the entire data volume before upgrading from `v2.5.1` or earlier.
 
 A sample [Docker Compose configuration](.docker/docker-compose.yml) is
 included. To enable automatic Docker app discovery, explicitly mount
@@ -155,7 +155,7 @@ the password outside the image and refer to the mounted secret file.
 ```yaml
 services:
   flame:
-    image: ghcr.io/erathaowl/flame:v2.5.1
+    image: ghcr.io/erathaowl/flame:v2.6.0
     ports:
       - "5005:5005"
     volumes:

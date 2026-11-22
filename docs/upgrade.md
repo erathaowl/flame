@@ -1,10 +1,10 @@
 # Upgrade, data migration and rollback
 
-## Upgrade from v2.5.1 to the current master
+## Upgrade from v2.5.1 to v2.6.0
 
-The current `master` branch includes the migration from
-`data/config.json` to a typed SQLite `settings` table. The published
-`v2.5.1` release still uses the old storage scheme.
+Release `v2.6.0` introduces the migration from `data/config.json` to a
+typed SQLite `settings` table. Release `v2.5.1` and earlier still use
+the file-based configuration storage.
 
 Before upgrading:
 
