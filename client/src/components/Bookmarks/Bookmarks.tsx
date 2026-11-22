@@ -60,6 +60,7 @@ export const Bookmarks = (props: Props): JSX.Element => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [formContentType, setFormContentType] = useState(ContentType.category);
   const [isInUpdate, setIsInUpdate] = useState(false);
+  const [categoryToUpdate, setCategoryToUpdate] = useState<Category | null>(null);
 
   // Table
   const [showTable, setShowTable] = useState(false);
@@ -80,7 +81,7 @@ export const Bookmarks = (props: Props): JSX.Element => {
       setTableContentType(ContentType.bookmark);
       setShowTable(true);
     }
-  }, [categoryInEdit]);
+  }, [categoryInEdit?.id]);
 
   useEffect(() => {
     setShowTable(false);
@@ -107,7 +108,7 @@ export const Bookmarks = (props: Props): JSX.Element => {
 
     if (instanceOfCategory(data)) {
       setFormContentType(ContentType.category);
-      setEditCategory(data);
+      setCategoryToUpdate(data);
     } else {
       setFormContentType(ContentType.bookmark);
       setEditBookmark(data);
@@ -140,6 +141,7 @@ export const Bookmarks = (props: Props): JSX.Element => {
           modalHandler={toggleModal}
           contentType={formContentType}
           inUpdate={isInUpdate}
+          categoryToUpdate={categoryToUpdate}
         />
       </Modal>
 

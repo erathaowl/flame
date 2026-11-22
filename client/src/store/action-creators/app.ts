@@ -122,7 +122,7 @@ export const deleteApp =
   };
 
 export const updateApp =
-  (id: number, formData: NewApp | FormData) =>
+  (id: number, formData: Partial<NewApp> | FormData) =>
   async (dispatch: Dispatch<UpdateAppAction>) => {
     try {
       const res = await axios.put<ApiResponse<App>>(
@@ -178,10 +178,15 @@ export const reorderApps =
 
       dispatch({
         type: ActionType.reorderApps,
-        payload: apps,
+        payload: apps.map((app, index) => ({ ...app, orderId: index + 1 })),
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save application order' },
+      });
+      dispatch<any>(getApps());
     }
   };
 

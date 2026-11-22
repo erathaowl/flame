@@ -50,7 +50,7 @@ export const AppTable = (props: Props): JSX.Element => {
       return;
     }
 
-    if (!result.destination) {
+    if (!result.destination || result.destination.index === result.source.index) {
       return;
     }
 
@@ -83,7 +83,7 @@ export const AppTable = (props: Props): JSX.Element => {
 
   const changeAppVisibiltyHandler = (id: number) => {
     const app = apps.find((a) => a.id === id) as App;
-    updateApp(id, { ...app, isPublic: !app.isPublic });
+    updateApp(id, { isPublic: !app.isPublic });
   };
 
   return (
@@ -105,6 +105,8 @@ export const AppTable = (props: Props): JSX.Element => {
             <Table
               headers={['Name', 'URL', 'Icon', 'Visibility', 'Actions']}
               innerRef={provided.innerRef}
+              droppableProps={provided.droppableProps}
+              placeholder={provided.placeholder}
             >
               {localApps.map((app: App, index): JSX.Element => {
                 return (
@@ -112,6 +114,7 @@ export const AppTable = (props: Props): JSX.Element => {
                     key={app.id}
                     draggableId={app.id.toString()}
                     index={index}
+                    isDragDisabled={config.useOrdering !== 'orderId'}
                   >
                     {(provided, snapshot) => {
                       const style = {
@@ -125,11 +128,18 @@ export const AppTable = (props: Props): JSX.Element => {
                       return (
                         <tr
                           {...provided.draggableProps}
-                          {...provided.dragHandleProps}
                           ref={provided.innerRef}
                           style={style}
                         >
-                          <td style={{ width: '200px' }}>{app.name}</td>
+                          <td
+                            {...provided.dragHandleProps}
+                            style={{
+                              width: '200px',
+                              cursor: config.useOrdering === 'orderId' ? 'grab' : 'default',
+                            }}
+                          >
+                            {app.name}
+                          </td>
                           <td style={{ width: '200px' }}>{app.url}</td>
                           <td style={{ width: '200px' }}>{app.icon}</td>
                           <td style={{ width: '200px' }}>

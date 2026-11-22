@@ -26,7 +26,7 @@ interface Props {
 
 export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
   const {
-    bookmarks: { categoryInEdit },
+    bookmarks: { categoryInEdit, categories },
     config: { config },
   } = useSelector((state: State) => state);
 
@@ -38,14 +38,15 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
     reorderBookmarks,
   } = bindActionCreators(actionCreators, dispatch);
 
+  const selectedCategory =
+    categories.find((category) => category.id === categoryInEdit?.id) || null;
+
   const [localBookmarks, setLocalBookmarks] = useState<Bookmark[]>([]);
 
   // Copy bookmarks array
   useEffect(() => {
-    if (categoryInEdit) {
-      setLocalBookmarks([...categoryInEdit.bookmarks]);
-    }
-  }, [categoryInEdit]);
+    setLocalBookmarks(selectedCategory ? [...selectedCategory.bookmarks] : []);
+  }, [selectedCategory]);
 
   // Drag and drop handler
   const dragEndHanlder = (result: DropResult): void => {
@@ -57,7 +58,7 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
       return;
     }
 
-    if (!result.destination) {
+    if (!result.destination || result.destination.index === result.source.index) {
       return;
     }
 
@@ -67,13 +68,13 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
 
     setLocalBookmarks(tmpBookmarks);
 
-    const categoryId = categoryInEdit?.id || -1;
+    const categoryId = selectedCategory?.id || -1;
     reorderBookmarks(tmpBookmarks, categoryId);
   };
 
   // Action hanlders
   const deleteBookmarkHandler = (id: number, name: string) => {
-    const categoryId = categoryInEdit?.id || -1;
+    const categoryId = selectedCategory?.id || -1;
 
     const proceed = window.confirm(`Are you sure you want to delete ${name}?`);
     if (proceed) {
@@ -83,39 +84,39 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
 
   const updateBookmarkHandler = (id: number) => {
     const bookmark =
-      categoryInEdit?.bookmarks.find((b) => b.id === id) || bookmarkTemplate;
+      selectedCategory?.bookmarks.find((b) => b.id === id) || bookmarkTemplate;
 
     openFormForUpdating(bookmark);
   };
 
   const changeBookmarkVisibiltyHandler = (id: number) => {
     const bookmark =
-      categoryInEdit?.bookmarks.find((b) => b.id === id) || bookmarkTemplate;
+      selectedCategory?.bookmarks.find((b) => b.id === id) || bookmarkTemplate;
 
-    const categoryId = categoryInEdit?.id || -1;
+    const categoryId = selectedCategory?.id || -1;
     const [prev, curr] = [categoryId, categoryId];
 
     updateBookmark(
       id,
-      { ...bookmark, isPublic: !bookmark.isPublic },
+      { isPublic: !bookmark.isPublic },
       { prev, curr }
     );
   };
 
   return (
     <Fragment>
-      {!categoryInEdit ? (
+      {!selectedCategory ? (
         <Message isPrimary={false}>
           Switch to grid view and click on the name of category you want to edit
         </Message>
       ) : (
         <Message isPrimary={false}>
-          Editing bookmarks from&nbsp;<span>{categoryInEdit.name}</span>
+          Editing bookmarks from&nbsp;<span>{selectedCategory.name}</span>
           &nbsp;category
         </Message>
       )}
 
-      {categoryInEdit && (
+      {selectedCategory && (
         <DragDropContext onDragEnd={dragEndHanlder}>
           <Droppable droppableId="bookmarks">
             {(provided) => (
@@ -129,6 +130,8 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
                   'Actions',
                 ]}
                 innerRef={provided.innerRef}
+              droppableProps={provided.droppableProps}
+              placeholder={provided.placeholder}
               >
                 {localBookmarks.map((bookmark, index): JSX.Element => {
                   return (
@@ -136,6 +139,7 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
                       key={bookmark.id}
                       draggableId={bookmark.id.toString()}
                       index={index}
+                    isDragDisabled={config.useOrdering !== 'orderId'}
                     >
                       {(provided, snapshot) => {
                         const style = {
@@ -149,18 +153,25 @@ export const BookmarksTable = ({ openFormForUpdating }: Props): JSX.Element => {
                         return (
                           <tr
                             {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
+                              ref={provided.innerRef}
                             style={style}
                           >
-                            <td style={{ width: '200px' }}>{bookmark.name}</td>
+                            <td
+                            {...provided.dragHandleProps}
+                            style={{
+                              width: '200px',
+                              cursor: config.useOrdering === 'orderId' ? 'grab' : 'default',
+                            }}
+                          >
+                            {bookmark.name}
+                          </td>
                             <td style={{ width: '200px' }}>{bookmark.url}</td>
                             <td style={{ width: '200px' }}>{bookmark.icon}</td>
                             <td style={{ width: '200px' }}>
                               {bookmark.isPublic ? 'Visible' : 'Hidden'}
                             </td>
                             <td style={{ width: '200px' }}>
-                              {categoryInEdit.name}
+                              {selectedCategory.name}
                             </td>
 
                             {!snapshot.isDragging && (

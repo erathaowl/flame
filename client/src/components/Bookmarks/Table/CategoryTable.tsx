@@ -56,7 +56,7 @@ export const CategoryTable = ({ openFormForUpdating }: Props): JSX.Element => {
       return;
     }
 
-    if (!result.destination) {
+    if (!result.destination || result.destination.index === result.source.index) {
       return;
     }
 
@@ -91,7 +91,7 @@ export const CategoryTable = ({ openFormForUpdating }: Props): JSX.Element => {
 
   const changeCategoryVisibiltyHandler = (id: number) => {
     const category = categories.find((c) => c.id === id) as Category;
-    updateCategory(id, { ...category, isPublic: !category.isPublic });
+    updateCategory(id, { isPublic: !category.isPublic });
   };
 
   return (
@@ -113,6 +113,8 @@ export const CategoryTable = ({ openFormForUpdating }: Props): JSX.Element => {
             <Table
               headers={['Name', 'Visibility', 'Actions']}
               innerRef={provided.innerRef}
+              droppableProps={provided.droppableProps}
+              placeholder={provided.placeholder}
             >
               {localCategories.map((category, index): JSX.Element => {
                 return (
@@ -120,6 +122,7 @@ export const CategoryTable = ({ openFormForUpdating }: Props): JSX.Element => {
                     key={category.id}
                     draggableId={category.id.toString()}
                     index={index}
+                    isDragDisabled={config.useOrdering !== 'orderId'}
                   >
                     {(provided, snapshot) => {
                       const style = {
@@ -133,11 +136,18 @@ export const CategoryTable = ({ openFormForUpdating }: Props): JSX.Element => {
                       return (
                         <tr
                           {...provided.draggableProps}
-                          {...provided.dragHandleProps}
                           ref={provided.innerRef}
                           style={style}
                         >
-                          <td style={{ width: '300px' }}>{category.name}</td>
+                          <td
+                            {...provided.dragHandleProps}
+                            style={{
+                              width: '300px',
+                              cursor: config.useOrdering === 'orderId' ? 'grab' : 'default',
+                            }}
+                          >
+                            {category.name}
+                          </td>
                           <td style={{ width: '300px' }}>
                             {category.isPublic ? 'Visible' : 'Hidden'}
                           </td>

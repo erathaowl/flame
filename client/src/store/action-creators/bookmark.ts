@@ -164,7 +164,7 @@ export const deleteCategory =
   };
 
 export const updateCategory =
-  (id: number, formData: NewCategory) =>
+  (id: number, formData: Partial<NewCategory>) =>
   async (dispatch: Dispatch<UpdateCategoryAction>) => {
     try {
       const res = await axios.put<ApiResponse<Category>>(
@@ -223,7 +223,7 @@ export const deleteBookmark =
 export const updateBookmark =
   (
     bookmarkId: number,
-    formData: NewBookmark | FormData,
+    formData: Partial<NewBookmark> | FormData,
     category: {
       prev: number;
       curr: number;
@@ -323,10 +323,15 @@ export const reorderCategories =
 
       dispatch({
         type: ActionType.reorderCategories,
-        payload: categories,
+        payload: categories.map((category, index) => ({ ...category, orderId: index + 1 })),
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save category order' },
+      });
+      dispatch<any>(getCategories());
     }
   };
 
@@ -376,10 +381,18 @@ export const reorderBookmarks =
 
       dispatch({
         type: ActionType.reorderBookmarks,
-        payload: { bookmarks, categoryId },
+        payload: {
+          bookmarks: bookmarks.map((bookmark, index) => ({ ...bookmark, orderId: index + 1 })),
+          categoryId,
+        },
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch<any>({
+        type: ActionType.createNotification,
+        payload: { title: 'Error', message: 'Failed to save bookmark order' },
+      });
+      dispatch<any>(getCategories());
     }
   };
 

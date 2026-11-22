@@ -3,12 +3,14 @@ import classes from './Table.module.css';
 interface Props {
   children: React.ReactNode;
   headers: string[];
-  innerRef?: any;
+  innerRef?: (element: HTMLElement | null) => void;
+  droppableProps?: React.HTMLAttributes<HTMLTableSectionElement>;
+  placeholder?: React.ReactNode;
 }
 
 export const Table = (props: Props): JSX.Element => {
   return (
-    <div className={classes.TableContainer} ref={props.innerRef}>
+    <div className={classes.TableContainer}>
       <table className={classes.Table}>
         <thead className={classes.TableHead}>
           <tr>
@@ -19,7 +21,14 @@ export const Table = (props: Props): JSX.Element => {
             )}
           </tr>
         </thead>
-        <tbody className={classes.TableBody}>{props.children}</tbody>
+        <tbody
+          className={classes.TableBody}
+          ref={props.innerRef}
+          {...props.droppableProps}
+        >
+          {props.children}
+          {props.placeholder}
+        </tbody>
       </table>
     </div>
   );

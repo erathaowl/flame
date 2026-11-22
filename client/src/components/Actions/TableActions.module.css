@@ -1,12 +1,20 @@
 .TableActions {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .TableAction {
-  width: 22px;
+  width: 24px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
 }
 
-.TableAction:hover {
-  cursor: pointer;
+.TableAction:focus-visible {
+  outline: 2px solid var(--color-accent);
+  border-radius: 3px;
 }
