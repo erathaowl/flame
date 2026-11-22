@@ -163,3 +163,168 @@ for (const [name, file, data] of [
     assert.equal(created.orderId, 8);
   });
 }
+
+function loadIntegration(filename, model, extra) {
+  const source = fs.readFileSync(
+    path.join(__dirname, '..', filename),
+    'utf8'
+  );
+  const module = { exports: {} };
+  const dependencies = {
+    '../../../models/App': model,
+    'axios': extra.axios,
+    '../../../utils/Logger': class {
+      log() {}
+    },
+    '../../../utils/loadConfig': async () => ({
+      useOrdering: 'orderId',
+      unpinStoppedApps: false,
+      dockerHost: 'localhost:2375',
+    }),
+    '@kubernetes/client-node': extra.kubernetes,
+  };
+  const wrapper = vm.runInNewContext(
+    '(function (require, module) { ' + source + '\n})'
+  );
+  wrapper((name) => {
+    if (!Object.hasOwn(dependencies, name)) {
+      throw new Error('Unexpected dependency: ' + name);
+    }
+    return dependencies[name];
+  }, module);
+  return module.exports;
+}
+
+test('Docker integration preserves visibility without an explicit label', async () => {
+  const app = {
+    name: 'Old Name',
+    url: 'https://example.com',
+    icon: 'custom-icon',
+    isPublic: 0,
+    async update(data) {
+      Object.assign(this, data);
+    },
+  };
+  const model = {
+    async findAll() { return [app]; },
+    async create() { throw new Error('Unexpected create'); },
+  };
+  const useDocker = loadIntegration(
+    'controllers/apps/docker/useDocker.js',
+    model,
+    {
+      axios: {
+        async get() {
+          return {
+            data: [{
+              Labels: {
+                'flame.name': 'New Name',
+                'flame.url': 'https://example.com',
+                'flame.type': 'application',
+              },
+            }],
+          };
+        },
+      },
+    }
+  );
+
+  await useDocker();
+  assert.equal(app.name, 'New Name');
+  assert.equal(app.isPublic, 0);
+});
+
+test('Kubernetes integration respects explicitly configured visibility', async () => {
+  const app = {
+    name: 'Example',
+    url: 'https://example.com',
+    isPublic: 0,
+    async update(data) {
+      Object.assign(this, data);
+    },
+  };
+  const model = {
+    async findAll() { return [app]; },
+  };
+  const kubernetes = {
+    NetworkingV1Api: class {},
+    KubeConfig: class {
+      loadFromCluster() {}
+      makeApiClient() {
+        return {
+          async listIngressForAllNamespaces() {
+            return {
+              body: {
+                items: [{
+                  metadata: {
+                    annotations: {
+                      'flame.pawelmalak/type': 'application',
+                      'flame.pawelmalak/name': 'Example',
+                      'flame.pawelmalak/url': 'https://example.com',
+                      'flame.pawelmalak/visible': 'true',
+                    },
+                  },
+                }],
+              },
+            };
+          },
+        };
+      }
+    },
+  };
+  const useKubernetes = loadIntegration(
+    'controllers/apps/docker/useKubernetes.js',
+    model,
+    { kubernetes }
+  );
+
+  await useKubernetes();
+  assert.equal(app.isPublic, 1);
+});
+
+test('Kubernetes integration preserves visibility without a label', async () => {
+  const app = {
+    name: 'Example',
+    url: 'https://example.com',
+    isPublic: 0,
+    async update(data) {
+      Object.assign(this, data);
+    },
+  };
+  const model = {
+    async findAll() { return [app]; },
+  };
+  const kubernetes = {
+    NetworkingV1Api: class {},
+    KubeConfig: class {
+      loadFromCluster() {}
+      makeApiClient() {
+        return {
+          async listIngressForAllNamespaces() {
+            return {
+              body: {
+                items: [{
+                  metadata: {
+                    annotations: {
+                      'flame.pawelmalak/type': 'application',
+                      'flame.pawelmalak/name': 'Example',
+                      'flame.pawelmalak/url': 'https://example.com',
+                    },
+                  },
+                }],
+              },
+            };
+          },
+        };
+      }
+    },
+  };
+  const useKubernetes = loadIntegration(
+    'controllers/apps/docker/useKubernetes.js',
+    model,
+    { kubernetes }
+  );
+
+  await useKubernetes();
+  assert.equal(app.isPublic, 0);
+});
