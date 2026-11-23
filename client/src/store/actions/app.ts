@@ -5,9 +5,14 @@ export interface GetAppsAction<T> {
   type:
     | ActionType.getApps
     | ActionType.getAppsSuccess
-    | ActionType.getAppsError;
-  payload: T | string;
+    ;
+  payload: T;
 }
+export interface GetAppsErrorAction {
+  type: ActionType.getAppsError;
+  payload: string;
+}
+
 export interface PinAppAction {
   type: ActionType.pinApp;
   payload: App;
