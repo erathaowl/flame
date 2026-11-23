@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apk --no-cache --virtual build-dependencies add python3 make g++ curl tar xz \
+RUN apk --no-cache --virtual build-dependencies add python3 make g++ curl tar xz unzip \
     && npm install --production
 
 COPY . .

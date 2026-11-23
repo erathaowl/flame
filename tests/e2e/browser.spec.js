@@ -104,6 +104,88 @@ test('browser: application and bookmark management with YAML backup', async ({ p
   });
 });
 
+test('browser: bundled LCD faces load correctly', async ({ page }) => {
+  await login(page);
+
+  await page.goto('/settings/interface');
+  const fontSelector = page.getByLabel('Font', { exact: true });
+  await expect(fontSelector.locator('option[value="dseg7"]')).toHaveCount(1);
+  await expect(fontSelector.locator('option[value="doto"]')).toHaveCount(1);
+
+  for (const filename of [
+    'DSEG7Classic-Regular.woff2',
+    'DSEG7Classic-Bold.woff2',
+    'Doto.woff2',
+  ]) {
+    const response = await page.request.get(`/clock-fonts/${filename}`);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toMatch(/font|octet-stream/);
+    expect((await response.body()).length).toBeGreaterThan(1000);
+  }
+
+  await page.goto('/');
+  const loaded = await page.evaluate(async () => {
+    const dseg = await document.fonts.load('400 50px "DSEG7 Classic"', '0123456789:');
+    const dsegBold = await document.fonts.load('700 50px "DSEG7 Classic"', '0123456789:');
+    const doto = await document.fonts.load('400 50px "Doto"', '0123456789:');
+    return [dseg.length, dsegBold.length, doto.length];
+  });
+  expect(loaded).toEqual([1, 1, 1]);
+});
+
+test('browser: quote, settings link and LCD clock remain separate on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await login(page);
+
+  const token = await page.evaluate(() => localStorage.getItem('token'));
+  const headers = { 'Authorization-Flame': `Bearer ${token}` };
+  const original = (await (await page.request.get('/api/config')).json()).data;
+
+  try {
+    for (const font of ['dseg7', 'doto']) {
+      const updated = await page.request.put('/api/config', {
+        headers,
+        data: { largeClock: true, clockSize: 'extra-large', clockFont: font },
+      });
+      expect(updated.ok()).toBe(true);
+      await page.goto('/');
+
+      const layout = await page.evaluate(() => {
+        const quote = document.querySelector('header p');
+        const settings = document.querySelector('header a[href="/settings"]');
+        const clock = document.querySelector('header h1');
+        if (!quote || !settings || !clock) return null;
+        return {
+          quoteBottom: quote.getBoundingClientRect().bottom,
+          settingsTop: settings.getBoundingClientRect().top,
+          settingsBottom: settings.getBoundingClientRect().bottom,
+          clockTop: clock.getBoundingClientRect().top,
+          clockFamily: window.getComputedStyle(clock).fontFamily,
+          viewportMeta: document.querySelector('meta[name="viewport"]')?.getAttribute('content'),
+          touchAction: window.getComputedStyle(document.documentElement).touchAction,
+        };
+      });
+
+      expect(layout).not.toBeNull();
+      expect(layout.settingsTop - layout.quoteBottom).toBeGreaterThanOrEqual(16);
+      expect(layout.clockTop - layout.settingsBottom).toBeGreaterThanOrEqual(20);
+      expect(layout.clockFamily).toContain(font === 'dseg7' ? 'DSEG7 Classic' : 'Doto');
+      expect(layout.viewportMeta).toContain('user-scalable=no');
+      expect(layout.viewportMeta).toContain('maximum-scale=1');
+      expect(layout.touchAction).toBe('pan-x pan-y');
+    }
+  } finally {
+    await page.request.put('/api/config', {
+      headers,
+      data: {
+        largeClock: original.largeClock,
+        clockSize: original.clockSize,
+        clockFont: original.clockFont,
+      },
+    });
+  }
+});
+
 test('browser: auto clock and weather appear side by side on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);

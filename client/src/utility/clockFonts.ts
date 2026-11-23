@@ -15,6 +15,8 @@ export const clockFonts: ClockFont[] = [
   { value: 'consolas', label: 'Consolas', family: 'Consolas, monospace' },
   { value: 'jetbrains-mono', label: 'JetBrainsMono Nerd Font', family: '"JetBrainsMono Nerd Font", monospace' },
   { value: '3270', label: '3270 Nerd Font', family: '"3270 Nerd Font", monospace' },
+  { value: 'dseg7', label: 'DSEG7 Classic (7-segment LCD)', family: '"DSEG7 Classic", monospace' },
+  { value: 'doto', label: 'Doto (dot-matrix LCD)', family: '"Doto", monospace' },
   { value: 'lcddot', label: 'LCD Dot', family: '"LCD Dot", monospace' },
   { value: 'cf-lcd-521', label: 'CF LCD 521', family: '"CF LCD 521", monospace' },
   { value: 'modern-lcd-7', label: 'Modern LCD-7', family: '"Modern LCD-7", monospace' },
