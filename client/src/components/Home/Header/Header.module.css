@@ -47,7 +47,8 @@
 }
 
 .LargeClockHeader .HeaderMain {
-  margin-top: 2rem;
+  margin-top: 3.5rem;
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {
