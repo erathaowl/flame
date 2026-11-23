@@ -218,6 +218,7 @@ See [test instructions and coverage matrix](docs/testing.md).
 
 - [YAML backup schema and restore behavior](docs/yaml-backup.md)
 - [Application status monitoring with Gatus](docs/status-monitoring.md)
+- [Large clock fonts and licensing](docs/clock-fonts.md)
 - [Settings migration and upgrade/rollback](docs/upgrade.md)
 - [Tests, CI and known coverage gaps](docs/testing.md)
 

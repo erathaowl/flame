@@ -4,10 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN apk --no-cache --virtual build-dependencies add python3 make g++ \
+RUN apk --no-cache --virtual build-dependencies add python3 make g++ curl tar xz \
     && npm install --production
 
-COPY . .    
+COPY . .
+
+RUN sh scripts/install-open-clock-fonts.sh client/public/clock-fonts
+    
 
 RUN mkdir -p ./public ./data \
     && cd ./client \
