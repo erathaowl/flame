@@ -61,7 +61,7 @@ sh scripts/install-personal-clock-fonts.sh /path/to/data/clock-fonts
 The script requires `curl` and `unzip`. If a distributor restricts
 automated downloads, download the ZIP files manually and extract the
 font files using the filenames listed in
-[`clockFonts.css`](../client/src/components/Home/Header/clockFonts.css).
+[`clock-fonts.css`](../client/public/clock-fonts.css).
 No rebuild is necessary for the optional fonts because Flame serves
 this folder at `/clock-fonts`.
 

@@ -8,7 +8,6 @@ import { WeatherWidget } from '../../Widgets/WeatherWidget/WeatherWidget';
 import { getDateTime } from './functions/getDateTime';
 import { greeter } from './functions/greeter';
 import { clockFonts } from '../../../utility/clockFonts';
-import './clockFonts.css';
 
 const clockSizes: Record<string, string> = {
   small: '2.5rem',
