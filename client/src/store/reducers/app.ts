@@ -38,6 +38,14 @@ export const appsReducer = (
       };
     }
 
+    case ActionType.getAppsError: {
+      return {
+        ...state,
+        loading: false,
+        errors: action.payload as string,
+      };
+    }
+
     case ActionType.pinApp: {
       const appIdx = state.apps.findIndex(
         (app) => app.id === action.payload.id
