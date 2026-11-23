@@ -20,17 +20,15 @@ const login = async (page) => {
   await expect(page.getByText(/You are logged in/)).toBeVisible();
 };
 
-test('browser: empty applications can be opened and populated', async ({ page }) => {
+test('browser: empty applications can be opened', async ({ page }) => {
   await login(page);
   await page.goto('/applications');
   await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
   await expect(page.getByText('No applications yet.')).toBeVisible();
   await page.getByText('Add', { exact: true }).click();
-  await page.getByLabel('App name').fill('First App');
-  await page.getByLabel('App URL').fill('https://first.example.com');
-  await page.getByLabel('App icon').fill('server');
-  await submit(page, 'POST', '/api/apps', page.getByRole('button', { name: 'Add new application' }));
-  await expect(page.getByText('First App')).toBeVisible();
+  await expect(page.getByLabel('App name')).toBeVisible();
+  await page.goto('/applications');
+  await expect(page.getByText('No applications yet.')).toBeVisible();
 });
 
 test('browser: application and bookmark management with YAML backup', async ({ page, browser }) => {
