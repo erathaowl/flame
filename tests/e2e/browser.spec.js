@@ -133,8 +133,12 @@ test('browser: bundled LCD faces load correctly', async ({ page }) => {
   expect(loaded).toEqual([1, 1, 1]);
 });
 
-test('browser: quote, settings link and LCD clock remain separate on mobile', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
+test('browser: quote, settings link and LCD clock remain separate on mobile', async ({ browser }) => {
+  const page = await browser.newPage({
+    viewport: { width: 375, height: 812 },
+    isMobile: true,
+    hasTouch: true,
+  });
   await login(page);
 
   const token = await page.evaluate(() => localStorage.getItem('token'));
@@ -183,6 +187,7 @@ test('browser: quote, settings link and LCD clock remain separate on mobile', as
         clockFont: original.clockFont,
       },
     });
+    await page.close();
   }
 });
 
