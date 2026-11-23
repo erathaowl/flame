@@ -1,3 +1,11 @@
+### v2.6.1 (2026-11-23)
+- Improved YAML backup settings layout, text contrast, spacing and export button styling.
+- Combined interface settings and quote library updates into one atomic SQLite save.
+- Added quote presentation styles: normal, italic, dimmed and italic dimmed.
+- Added a dedicated Clock settings section with font family, responsive size and normal/bold/italic/bold-italic styles.
+- Added bundled JetBrainsMono and 3270 Nerd Fonts, with documentation and optional self-installed LCD fonts subject to their licenses.
+- Expanded SQLite/HTTP and Chromium browser regression tests for interface saves and clock appearance.
+
 ### v2.6.0 (2026-11-22)
 - Migrated persistent application settings from data/config.json into a typed, per-key SQLite settings table, keeping existing values and defaults.
 - Made YAML restore atomic across applications, categories, bookmarks and sorting settings in one SQLite transaction.
