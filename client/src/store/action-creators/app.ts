@@ -5,6 +5,7 @@ import {
   AddAppAction,
   DeleteAppAction,
   GetAppsAction,
+  GetAppsErrorAction,
   PinAppAction,
   ReorderAppsAction,
   SetEditAppAction,
@@ -15,7 +16,7 @@ import axios from 'axios';
 import { applyAuth } from '../../utility';
 
 export const getApps =
-  () => async (dispatch: Dispatch<GetAppsAction<undefined | App[]>>) => {
+  () => async (dispatch: Dispatch<GetAppsAction<undefined | App[]> | GetAppsErrorAction>) => {
     dispatch({
       type: ActionType.getApps,
       payload: undefined,
@@ -31,7 +32,11 @@ export const getApps =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch({
+        type: ActionType.getAppsError,
+        payload: 'Failed to load applications',
+      });
     }
   };
 

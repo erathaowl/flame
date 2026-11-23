@@ -11,7 +11,7 @@ import { App } from '../../interfaces';
 import classes from './Apps.module.css';
 
 // UI
-import { Headline, Spinner, ActionButton, Modal, Container } from '../UI';
+import { Headline, Spinner, ActionButton, Modal, Container, Message } from '../UI';
 
 // Subcomponents
 import { AppGrid } from './AppGrid/AppGrid';
@@ -30,7 +30,7 @@ interface Props {
 export const Apps = (props: Props): JSX.Element => {
   // Get Redux state
   const {
-    apps: { apps, loading },
+    apps: { apps, loading, errors },
     auth: { isAuthenticated },
   } = useSelector((state: State) => state);
 
@@ -99,6 +99,16 @@ export const Apps = (props: Props): JSX.Element => {
       <div className={classes.Apps}>
         {loading ? (
           <Spinner />
+        ) : errors ? (
+          <Message>
+            {errors}. <button type="button" onClick={() => getApps()}>Retry</button>
+          </Message>
+        ) : !apps.length ? (
+          <Message>
+            No applications yet. {isAuthenticated
+              ? 'Use Add to create your first application.'
+              : 'Sign in to create your first application.'}
+          </Message>
         ) : !showTable ? (
           <AppGrid apps={apps} searching={props.searching} />
         ) : (

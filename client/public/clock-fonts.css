@@ -1,41 +1,55 @@
 @font-face {
   font-family: 'JetBrainsMono Nerd Font';
   src: url('/clock-fonts/JetBrainsMonoNerdFontMono-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: '3270 Nerd Font';
   src: url('/clock-fonts/3270NerdFontMono-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'LCD Dot';
   src: local('LCDDot'), url('/clock-fonts/lcddot_tr.ttf');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'CF LCD 521';
   src: local('CF LCD 521'), url('/clock-fonts/CF LCD 521.ttf');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Modern LCD-7';
   src: local('Modern LCD-7'), url('/clock-fonts/modern_lcd-7.ttf');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Advanced Pixel LCD-7';
   src: local('Advanced Pixel LCD-7'), url('/clock-fonts/advanced_pixel_lcd-7.ttf');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'LCD AT&T Phone Time/Date';
   src: local('LCD AT&T Phone Time/Date'), url('/clock-fonts/LCDAT&TPhoneTimeDate.ttf');
+  font-style: normal;
+  font-weight: 400;
   font-display: swap;
 }

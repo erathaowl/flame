@@ -20,6 +20,17 @@ const login = async (page) => {
   await expect(page.getByText(/You are logged in/)).toBeVisible();
 };
 
+test('browser: empty applications can be opened', async ({ page }) => {
+  await login(page);
+  await page.goto('/applications');
+  await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
+  await expect(page.getByText('No applications yet.')).toBeVisible();
+  await page.getByText('Add', { exact: true }).click();
+  await expect(page.getByLabel('App name')).toBeVisible();
+  await page.goto('/applications');
+  await expect(page.getByText('No applications yet.')).toBeVisible();
+});
+
 test('browser: application and bookmark management with YAML backup', async ({ page, browser }) => {
   await login(page);
 
@@ -116,9 +127,20 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await expect(page.locator('header h1')).toHaveCSS('font-size', '72px');
   await expect(page.locator('header h1')).toHaveCSS('font-weight', '700');
   await expect(page.locator('header h1')).toHaveCSS('font-style', 'italic');
+  await expect.poll(() => page.evaluate(() => document.fonts.check('16px "JetBrainsMono Nerd Font"'))).toBe(true);
   const fontResponse = await page.request.get('/clock-fonts/JetBrainsMonoNerdFontMono-Regular.ttf');
   expect(fontResponse.status()).toBe(200);
+  expect(fontResponse.headers()['content-type']).toMatch(/font|octet-stream/);
+  expect(fontResponse.headers()['cache-control']).toMatch(/no-cache/);
   expect((await fontResponse.body()).length).toBeGreaterThan(1000);
+  const missingFont = await page.request.get('/clock-fonts/missing-font.ttf');
+  expect(missingFont.status()).toBe(404);
+  const html = await page.request.get('/');
+  expect(html.headers()['cache-control']).toMatch(/no-cache/);
+  const stylesheet = await page.request.get('/clock-fonts.css');
+  expect(stylesheet.headers()['cache-control']).toMatch(/no-cache/);
+  const config = await page.request.get('/api/config');
+  expect(config.headers()['cache-control']).toMatch(/no-store/);
   const quote = page.getByText('One deterministic browser quote');
   await expect(quote).toBeVisible();
   await expect(quote).toHaveCSS('font-style', 'italic');

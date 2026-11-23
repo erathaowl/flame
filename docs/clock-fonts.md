@@ -69,3 +69,17 @@ These assets are not included in the repository, release packages, or
 Docker images. The folder is part of the persistent data volume. Make sure
 your font license also permits serving the fonts to browser visitors,
 especially on publicly accessible dashboards.
+
+## Browser cache and troubleshooting
+
+Flame serves bundled Nerd Fonts from the compiled public assets and optional
+LCD fonts from the persistent `data/clock-fonts` directory. The
+`/clock-fonts/*` requests are revalidated on each load, as are the
+`/clock-fonts.css` stylesheet and the main HTML page. Hashed JavaScript
+and CSS bundles retain immutable caching.
+
+If the clock still shows a fallback typeface, verify that the chosen font
+exists by requesting `/clock-fonts/<font-file>.ttf` and checking for a
+successful font response. A 404 means the font is missing, and optional LCD
+fonts must be installed on the running instance. Browser developer tools
+can also display which font is actually used to render the clock.

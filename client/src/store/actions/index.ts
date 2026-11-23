@@ -25,6 +25,7 @@ import {
 
 import {
   GetAppsAction,
+  GetAppsErrorAction,
   PinAppAction,
   AddAppAction,
   DeleteAppAction,
@@ -78,6 +79,7 @@ export type Action =
   | ClearNotificationAction
   // Apps
   | GetAppsAction<undefined | App[]>
+  | GetAppsErrorAction
   | PinAppAction
   | AddAppAction
   | DeleteAppAction
