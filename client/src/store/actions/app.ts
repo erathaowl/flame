@@ -6,7 +6,7 @@ export interface GetAppsAction<T> {
     | ActionType.getApps
     | ActionType.getAppsSuccess
     | ActionType.getAppsError;
-  payload: T;
+  payload: T | string;
 }
 export interface PinAppAction {
   type: ActionType.pinApp;
