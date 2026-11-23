@@ -15,7 +15,7 @@ import { InputGroup, Button, SettingsHeadline } from '../../UI';
 
 // Utils
 import { uiSettingsTemplate, inputHandler, applyAuth } from '../../../utility';
-import { clockFonts } from '../../../utility/clockFonts';
+import { availableClockFonts } from '../../../utility/clockFonts';
 import { QuoteSettings } from './QuoteSettings';
 
 export const UISettings = (): JSX.Element => {
@@ -29,6 +29,23 @@ export const UISettings = (): JSX.Element => {
   const [quotes, setQuotes] = useState('');
   const [quotesLoaded, setQuotesLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [installedClockFonts, setInstalledClockFonts] = useState<string[]>([]);
+  const [clockFontsLoaded, setClockFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    axios.get<{ data: string[] }>('/api/clock-fonts')
+      .then((response) => {
+        if (active) setInstalledClockFonts(response.data.data);
+      })
+      .catch(() => {
+        if (active) createNotification({ title: 'Error', message: 'Failed to list installed clock fonts' });
+      })
+      .finally(() => {
+        if (active) setClockFontsLoaded(true);
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -85,6 +102,9 @@ export const UISettings = (): JSX.Element => {
       state: formData,
     });
   };
+
+  const visibleClockFonts = availableClockFonts(installedClockFonts);
+  const selectedClockFontAvailable = visibleClockFonts.some((font) => font.value === formData.clockFont);
 
   return (
     <>
@@ -263,11 +283,20 @@ export const UISettings = (): JSX.Element => {
             value={formData.clockFont || 'default'}
             onChange={(e) => inputChangeHandler(e)}
           >
-            {clockFonts.map(({ value, label }) => (
+            {!selectedClockFontAvailable && formData.clockFont && (
+              <option value={formData.clockFont} disabled>
+                {formData.clockFont} (not installed)
+              </option>
+            )}
+            {visibleClockFonts.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <span>LCD fonts require local installation. If a font is unavailable, the browser uses a fallback. See the clock font guide.</span>
+          <span>
+            {clockFontsLoaded
+              ? 'System and bundled fonts are always listed. Optional LCD and custom fonts appear when installed in data/clock-fonts.'
+              : 'Checking installed clock fonts...'}
+          </span>
         </InputGroup>
 
         <InputGroup>

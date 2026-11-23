@@ -104,6 +104,27 @@ test('browser: application and bookmark management with YAML backup', async ({ p
   });
 });
 
+test('browser: clock font selector lists installed fonts only', async ({ page }) => {
+  await login(page);
+
+  const fonts = await page.request.get('/api/clock-fonts');
+  expect(fonts.ok()).toBe(true);
+  expect(fonts.headers()['cache-control']).toMatch(/no-store/);
+  expect(Array.isArray((await fonts.json()).data)).toBe(true);
+
+  await page.route('**/api/clock-fonts', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ data: ['CF LCD 521.ttf', 'personal-display.otf'] }),
+  }));
+  await page.goto('/settings/interface');
+  const selector = page.getByLabel('Font', { exact: true });
+  await expect(selector.locator('option[value="jetbrains-mono"]')).toHaveCount(1);
+  await expect(selector.locator('option[value="cf-lcd-521"]')).toHaveCount(1);
+  await expect(selector.locator('option[value="lcddot"]')).toHaveCount(0);
+  await expect(selector.locator('option[value="local:personal-display.otf"]')).toHaveCount(1);
+});
+
 test('browser: save quotes, quote styles and clock font in one form', async ({ page }) => {
   await login(page);
   await page.goto('/settings/interface');

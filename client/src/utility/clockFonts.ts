@@ -1,4 +1,10 @@
-export const clockFonts = [
+export interface ClockFont {
+  value: string;
+  label: string;
+  family: string;
+}
+
+export const clockFonts: ClockFont[] = [
   { value: 'default', label: 'Roboto (default)', family: 'Roboto, sans-serif' },
   { value: 'arial', label: 'Arial', family: 'Arial, sans-serif' },
   { value: 'helvetica', label: 'Helvetica', family: 'Helvetica, Arial, sans-serif' },
@@ -15,3 +21,47 @@ export const clockFonts = [
   { value: 'advanced-pixel-lcd-7', label: 'Advanced Pixel LCD-7', family: '"Advanced Pixel LCD-7", monospace' },
   { value: 'lcd-att', label: 'LCD AT&T Phone Time/Date', family: '"LCD AT&T Phone Time/Date", monospace' },
 ];
+
+const optionalFontFiles: Record<string, string[]> = {
+  lcddot: ['lcddot_tr.ttf'],
+  'cf-lcd-521': ['CF LCD 521.ttf', 'CFLCD-Regular.ttf'],
+  'modern-lcd-7': ['modern_lcd-7.ttf'],
+  'advanced-pixel-lcd-7': ['advanced_pixel_lcd-7.ttf'],
+  'lcd-att': ['LCDAT&TPhoneTimeDate.ttf'],
+};
+
+const validFontFile = (file: string): boolean =>
+  /^[^/\\]+\.(ttf|otf|woff2?)$/i.test(file);
+
+export const getClockFontFamily = (value: string): string | undefined => {
+  if (value.startsWith('local:')) {
+    const file = value.slice(6);
+    return validFontFile(file) ? `${JSON.stringify(`Flame Local ${file}`)}, monospace` : undefined;
+  }
+  return clockFonts.find((font) => font.value === value)?.family;
+};
+
+export const isLocalClockFont = (value: string): boolean =>
+  value.startsWith('local:') || Object.prototype.hasOwnProperty.call(optionalFontFiles, value);
+
+export const availableClockFonts = (installed: string[]): ClockFont[] => {
+  const installedNames = new Set(installed.map((file) => file.toLowerCase()));
+  const knownNames = new Set(
+    Object.values(optionalFontFiles).flat().map((file) => file.toLowerCase())
+  );
+
+  const builtIn = clockFonts.filter((font) => !optionalFontFiles[font.value]);
+  const optional = clockFonts.filter((font) =>
+    optionalFontFiles[font.value]?.some((file) => installedNames.has(file.toLowerCase()))
+  );
+  const custom = installed
+    .filter((file) => validFontFile(file) && !knownNames.has(file.toLowerCase()))
+    .sort((a, b) => a.localeCompare(b))
+    .map((file) => ({
+      value: `local:${file}`,
+      label: `${file.replace(/\.(ttf|otf|woff2?)$/i, '')} (installed)`,
+      family: getClockFontFamily(`local:${file}`) || 'monospace',
+    }));
+
+  return [...builtIn, ...optional, ...custom];
+};

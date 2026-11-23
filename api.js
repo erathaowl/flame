@@ -45,6 +45,7 @@ api.use('/api/quotes', require('./routes/quotes'));
 api.use('/api/interface', require('./routes/interface'));
 api.use('/api/backup', require('./routes/backup'));
 api.use('/api/config', require('./routes/config'));
+api.use('/api/clock-fonts', require('./routes/clockFonts'));
 api.use('/api/weather', require('./routes/weather'));
 api.use('/api/categories', require('./routes/category'));
 api.use('/api/bookmarks', require('./routes/bookmark'));
