@@ -1,7 +1,16 @@
 # Large clock fonts
 
-Under **Settings > Interface**, enable **Large clock / small quote** to
-select a clock font. Common system fonts (Roboto, Arial, Helvetica,
+Under **Settings > Interface**, choose **Large clock / small quote** in
+the Header section. The dedicated **Clock** section lets you choose its
+font, size and style, using the same Save changes button as the quote
+library.
+
+Sizes: Small (2.5rem), Normal (3.5rem), Large (4.5rem), and Extra large
+(5.5rem). The browser limits the rendered size to 12vw to keep the clock
+usable on small screens. Font styles: Normal, Bold, Italic, and Bold italic.
+The default style is Bold, matching the previous large clock.
+
+Common system fonts (Roboto, Arial, Helvetica,
 Verdana, Georgia, Times New Roman, Courier New, Consolas) are available
 without downloading assets.
 

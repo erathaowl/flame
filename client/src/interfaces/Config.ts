@@ -34,5 +34,7 @@ export interface Config {
   hideDate: boolean;
   largeClock: boolean;
   clockFont: string;
+  clockSize: string;
+  clockStyle: string;
   quoteStyle: string;
 }

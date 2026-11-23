@@ -15,6 +15,8 @@ export const uiSettingsTemplate: UISettingsForm = {
   greetingsSchema: 'Good evening!;Good afternoon!;Good morning!;Good night!',
   largeClock: false,
   clockFont: 'default',
+  clockSize: 'normal',
+  clockStyle: 'bold',
   quoteStyle: 'normal',
   daySchema: 'Sunday;Monday;Tuesday;Wednesday;Thursday;Friday;Saturday',
   monthSchema:

@@ -274,11 +274,15 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
         config: {
           quoteStyle: 'italic-dimmed',
           clockFont: '3270',
+          clockSize: 'large',
+          clockStyle: 'bold-italic',
           largeClock: true,
         },
         quotes: ['First quote', 'Second quote'],
       });
       assert.equal(updated.clockFont, '3270');
+      assert.equal(updated.clockSize, 'large');
+      assert.equal(updated.clockStyle, 'bold-italic');
       assert.equal(updated.quoteStyle, 'italic-dimmed');
       assert.equal(updated.largeClock, true);
       assert.deepEqual(await ok('GET', '/api/quotes'), ['First quote', 'Second quote']);
@@ -290,7 +294,12 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
           throw new Error('Simulated quote write failure');
         };
         const failed = await request('PUT', '/api/interface', {
-          config: { quoteStyle: 'normal', clockFont: 'arial' },
+          config: {
+            quoteStyle: 'normal',
+            clockFont: 'arial',
+            clockSize: 'small',
+            clockStyle: 'normal',
+          },
           quotes: ['Replacement'],
         }, true);
         assert.equal(failed.status, 500);
@@ -301,6 +310,8 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
       const current = await ok('GET', '/api/config');
       assert.equal(current.quoteStyle, 'italic-dimmed');
       assert.equal(current.clockFont, '3270');
+      assert.equal(current.clockSize, 'large');
+      assert.equal(current.clockStyle, 'bold-italic');
       assert.deepEqual(await ok('GET', '/api/quotes'), ['First quote', 'Second quote']);
 
       await fs.mkdir(path.join(directory, 'data/clock-fonts'), { recursive: true });

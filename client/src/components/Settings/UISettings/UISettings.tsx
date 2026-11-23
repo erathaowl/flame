@@ -208,23 +208,6 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
-        {formData.largeClock && (
-          <InputGroup>
-            <label htmlFor="clockFont">Large clock font</label>
-            <select
-              id="clockFont"
-              name="clockFont"
-              value={formData.clockFont || 'default'}
-              onChange={(e) => inputChangeHandler(e)}
-            >
-              {clockFonts.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-            <span>Additional LCD fonts require local installation. See the clock font guide.</span>
-          </InputGroup>
-        )}
-
         {/* CUSTOM GREETINGS */}
         <InputGroup>
           <label htmlFor="greetingsSchema">Custom greetings</label>
@@ -270,6 +253,54 @@ export const UISettings = (): JSX.Element => {
           <span>Names must be separated with semicolon</span>
         </InputGroup>
   
+        {/* === CLOCK OPTIONS === */}
+        <SettingsHeadline text="Clock" />
+        <InputGroup>
+          <label htmlFor="clockFont">Font</label>
+          <select
+            id="clockFont"
+            name="clockFont"
+            value={formData.clockFont || 'default'}
+            onChange={(e) => inputChangeHandler(e)}
+          >
+            {clockFonts.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          <span>Additional LCD fonts require local installation. See the clock font guide.</span>
+        </InputGroup>
+
+        <InputGroup>
+          <label htmlFor="clockSize">Size</label>
+          <select
+            id="clockSize"
+            name="clockSize"
+            value={formData.clockSize || 'normal'}
+            onChange={(e) => inputChangeHandler(e)}
+          >
+            <option value="small">Small</option>
+            <option value="normal">Normal (default)</option>
+            <option value="large">Large</option>
+            <option value="extra-large">Extra large</option>
+          </select>
+        </InputGroup>
+
+        <InputGroup>
+          <label htmlFor="clockStyle">Style</label>
+          <select
+            id="clockStyle"
+            name="clockStyle"
+            value={formData.clockStyle || 'bold'}
+            onChange={(e) => inputChangeHandler(e)}
+          >
+            <option value="normal">Normal</option>
+            <option value="bold">Bold (default)</option>
+            <option value="italic">Italic</option>
+            <option value="bold-italic">Bold italic</option>
+          </select>
+          <span>These settings apply to the large clock layout.</span>
+        </InputGroup>
+
         {/* === SECTIONS OPTIONS === */}
         <SettingsHeadline text="Sections" />
         {/* HIDE APPS */}

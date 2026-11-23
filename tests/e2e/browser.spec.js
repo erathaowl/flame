@@ -98,7 +98,9 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await page.goto('/settings/interface');
 
   await page.getByLabel('Header layout').selectOption('1');
-  await page.getByLabel('Large clock font').selectOption('jetbrains-mono');
+  await page.getByLabel('Font', { exact: true }).selectOption('jetbrains-mono');
+  await page.getByLabel('Size', { exact: true }).selectOption('large');
+  await page.getByLabel('Style', { exact: true }).selectOption('bold-italic');
   await page.getByLabel('Quote style').selectOption('italic-dimmed');
 
   const quotes = page.getByLabel('Quotes (one per line)');
@@ -111,6 +113,9 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
   await expect(page.locator('header h1')).toHaveCSS('font-family', /JetBrainsMono Nerd Font/);
+  await expect(page.locator('header h1')).toHaveCSS('font-size', '72px');
+  await expect(page.locator('header h1')).toHaveCSS('font-weight', '700');
+  await expect(page.locator('header h1')).toHaveCSS('font-style', 'italic');
   const fontResponse = await page.request.get('/clock-fonts/JetBrainsMonoNerdFontMono-Regular.ttf');
   expect(fontResponse.status()).toBe(200);
   expect((await fontResponse.body()).length).toBeGreaterThan(1000);
@@ -120,9 +125,13 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await expect(quote).toHaveCSS('opacity', '0.55');
 
   await page.goto('/settings/interface');
-  await expect(page.getByLabel('Large clock font')).toHaveValue('jetbrains-mono');
+  await expect(page.getByLabel('Font', { exact: true })).toHaveValue('jetbrains-mono');
+  await expect(page.getByLabel('Size', { exact: true })).toHaveValue('large');
+  await expect(page.getByLabel('Style', { exact: true })).toHaveValue('bold-italic');
   await expect(page.getByLabel('Quote style')).toHaveValue('italic-dimmed');
   await page.getByLabel('Header layout').selectOption('0');
+  await page.getByLabel('Size', { exact: true }).selectOption('small');
+  await page.getByLabel('Style', { exact: true }).selectOption('normal');
   for (const [style, fontStyle, opacity] of [
     ['italic', 'italic', '1'],
     ['dimmed', 'normal', '0.55'],

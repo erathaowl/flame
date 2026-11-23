@@ -28,6 +28,8 @@ export interface UISettingsForm {
   greetingsSchema: string;
   largeClock: boolean;
   clockFont: string;
+  clockSize: string;
+  clockStyle: string;
   quoteStyle: string;
   daySchema: string;
   monthSchema: string;
