@@ -4,12 +4,34 @@ const { errorHandler } = require('./middleware');
 
 const api = express();
 
-// Static files
-api.use(express.static(join(__dirname, 'public')));
+// Cache HTML and configuration carefully while allowing versioned assets to be cached.
+const publicDirectory = join(__dirname, 'public');
+const fontDirectory = join(__dirname, 'data/clock-fonts');
+const revalidate = (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  next();
+};
+
+api.use('/api', (_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+api.use('/clock-fonts', revalidate, express.static(fontDirectory, { fallthrough: false }));
 api.use('/uploads', express.static(join(__dirname, 'data/uploads')));
-api.use('/clock-fonts', express.static(join(__dirname, 'data/clock-fonts')));
-api.get(/^\/(?!api)/, (req, res) => {
-  res.sendFile(join(__dirname, 'public/index.html'));
+api.use(express.static(publicDirectory, {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith('/index.html') ||
+        filePath.endsWith('/clock-fonts.css') ||
+        filePath.endsWith('/flame.css')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    } else if (/\/static\/(js|css|media)\//.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  },
+}));
+api.get(/^\/(?!api|clock-fonts(?:\/|$))/, (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  res.sendFile(join(publicDirectory, 'index.html'));
 });
 
 // Body parser
