@@ -111,6 +111,9 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
   await expect(page.locator('header h1')).toHaveCSS('font-family', /JetBrainsMono Nerd Font/);
+  const fontResponse = await page.request.get('/clock-fonts/JetBrainsMonoNerdFontMono-Regular.ttf');
+  expect(fontResponse.status()).toBe(200);
+  expect((await fontResponse.body()).length).toBeGreaterThan(1000);
   const quote = page.getByText('One deterministic browser quote');
   await expect(quote).toBeVisible();
   await expect(quote).toHaveCSS('font-style', 'italic');
@@ -120,13 +123,21 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await expect(page.getByLabel('Large clock font')).toHaveValue('jetbrains-mono');
   await expect(page.getByLabel('Quote style')).toHaveValue('italic-dimmed');
   await page.getByLabel('Header layout').selectOption('0');
-  await page.getByLabel('Quote style').selectOption('normal');
-  await submit(page, 'PUT', '/api/interface',
-    page.getByRole('button', { name: 'Save changes' }));
-
-  await page.goto('/');
-  await expect(page.locator('header h1')).toHaveText('One deterministic browser quote');
-  await expect(page.locator('header h1')).toHaveCSS('font-style', 'normal');
+  for (const [style, fontStyle, opacity] of [
+    ['italic', 'italic', '1'],
+    ['dimmed', 'normal', '0.55'],
+    ['normal', 'normal', '1'],
+  ]) {
+    await page.getByLabel('Quote style').selectOption(style);
+    await submit(page, 'PUT', '/api/interface',
+      page.getByRole('button', { name: 'Save changes' }));
+    await page.goto('/');
+    const headline = page.locator('header h1');
+    await expect(headline).toHaveText('One deterministic browser quote');
+    await expect(headline).toHaveCSS('font-style', fontStyle);
+    await expect(headline).toHaveCSS('opacity', opacity);
+    await page.goto('/settings/interface');
+  }
 });
 
 test('browser: keyboard reordering persists the new application order', async ({ page }) => {

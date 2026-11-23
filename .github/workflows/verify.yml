@@ -19,8 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Check backend JavaScript syntax
-        run: find controllers db middleware models routes utils -name '*.js' -print0 | xargs -0 -n 1 node --check
+      - name: Check backend JavaScript syntax and font installers
+        run: |
+          find controllers db middleware models routes utils -name '*.js' -print0 | xargs -0 -n 1 node --check
+          sh -n scripts/install-open-clock-fonts.sh scripts/install-personal-clock-fonts.sh
       - name: Test management controllers
         run: node --test tests/*.test.js
 
@@ -74,6 +76,8 @@ jobs:
         run: npm install --no-save --package-lock=false @playwright/test@1.56.1
       - name: Install frontend dependencies
         run: npm ci --legacy-peer-deps --prefix client
+      - name: Install bundled clock fonts
+        run: sh scripts/install-open-clock-fonts.sh client/public/clock-fonts
       - name: Build production frontend
         run: CI=false npm run build --prefix client
       - name: Prepare public assets

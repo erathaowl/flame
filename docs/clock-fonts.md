@@ -57,4 +57,6 @@ No rebuild is necessary for the optional fonts because Flame serves
 this folder at `/clock-fonts`.
 
 These assets are not included in the repository, release packages, or
-Docker images. The folder is part of the persistent data volume.
+Docker images. The folder is part of the persistent data volume. Make sure
+your font license also permits serving the fonts to browser visitors,
+especially on publicly accessible dashboards.

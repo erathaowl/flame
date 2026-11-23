@@ -25,6 +25,7 @@ serve the production frontend through Flame:
 
 ```sh
 npm install --no-save --package-lock=false @playwright/test@1.56.1
+sh scripts/install-open-clock-fonts.sh client/public/clock-fonts
 npx playwright install --with-deps chromium
 mkdir -p public
 cp -a client/build/. public/
@@ -59,7 +60,8 @@ services are needed.
 
 The Chromium test exercises login, application and bookmark forms,
 visibility actions, YAML download/upload, guest filtering, keyboard
-reordering of application rows and switching the header clock/quote layout.
+reordering of application rows, the single atomic interface save, all four
+quote styles, the clock layout, and the bundled JetBrainsMono font asset.
 
 ## Remaining limitations
 
