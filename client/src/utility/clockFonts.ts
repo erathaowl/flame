@@ -1,0 +1,17 @@
+export const clockFonts = [
+  { value: 'default', label: 'Roboto (default)', family: 'Roboto, sans-serif' },
+  { value: 'arial', label: 'Arial', family: 'Arial, sans-serif' },
+  { value: 'helvetica', label: 'Helvetica', family: 'Helvetica, Arial, sans-serif' },
+  { value: 'verdana', label: 'Verdana', family: 'Verdana, sans-serif' },
+  { value: 'georgia', label: 'Georgia', family: 'Georgia, serif' },
+  { value: 'times', label: 'Times New Roman', family: '"Times New Roman", serif' },
+  { value: 'courier', label: 'Courier New', family: '"Courier New", monospace' },
+  { value: 'consolas', label: 'Consolas', family: 'Consolas, monospace' },
+  { value: 'jetbrains-mono', label: 'JetBrainsMono Nerd Font', family: '"JetBrainsMono Nerd Font", monospace' },
+  { value: '3270', label: '3270 Nerd Font', family: '"3270 Nerd Font", monospace' },
+  { value: 'lcddot', label: 'LCD Dot', family: '"LCD Dot", monospace' },
+  { value: 'cf-lcd-521', label: 'CF LCD 521', family: '"CF LCD 521", monospace' },
+  { value: 'modern-lcd-7', label: 'Modern LCD-7', family: '"Modern LCD-7", monospace' },
+  { value: 'advanced-pixel-lcd-7', label: 'Advanced Pixel LCD-7', family: '"Advanced Pixel LCD-7", monospace' },
+  { value: 'lcd-att', label: 'LCD AT&T Phone Time/Date', family: '"LCD AT&T Phone Time/Date", monospace' },
+];

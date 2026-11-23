@@ -27,6 +27,8 @@ export interface UISettingsForm {
   useAmericanDate: boolean;
   greetingsSchema: string;
   largeClock: boolean;
+  clockFont: string;
+  quoteStyle: string;
   daySchema: string;
   monthSchema: string;
   showTime: boolean;

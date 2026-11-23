@@ -7,9 +7,11 @@ import classes from './Header.module.css';
 import { WeatherWidget } from '../../Widgets/WeatherWidget/WeatherWidget';
 import { getDateTime } from './functions/getDateTime';
 import { greeter } from './functions/greeter';
+import { clockFonts } from '../../../utility/clockFonts';
+import './clockFonts.css';
 
 export const Header = (): JSX.Element => {
-  const { hideHeader, hideDate, showTime, largeClock } = useSelector(
+  const { hideHeader, hideDate, showTime, largeClock, clockFont, quoteStyle } = useSelector(
     (state: State) => state.config.config
   );
 
@@ -28,11 +30,16 @@ export const Header = (): JSX.Element => {
 
   const clock = now.toLocaleTimeString('en-GB', { hour12: false });
   const greeting = quote || greeter();
+  const fontFamily = clockFonts.find((font) => font.value === clockFont)?.family;
+  const quoteClass = quote ? [
+    quoteStyle?.includes('italic') ? classes.Italic : '',
+    quoteStyle?.includes('dimmed') ? classes.Dimmed : '',
+  ].filter(Boolean).join(' ') : '';
 
   return (
     <header className={classes.Header}>
       {largeClock ? (
-        !hideHeader && <p className={classes.SmallQuote}>{greeting}</p>
+        !hideHeader && <p className={`${classes.SmallQuote} ${quoteClass}`}>{greeting}</p>
       ) : (
         (!hideDate || showTime) && <p>{getDateTime()}</p>
       )}
@@ -43,7 +50,12 @@ export const Header = (): JSX.Element => {
 
       {!hideHeader && (
         <span className={classes.HeaderMain}>
-          <h1>{largeClock ? clock : greeting}</h1>
+          <h1
+            className={largeClock ? classes.Clock : quoteClass}
+            style={largeClock ? { fontFamily } : undefined}
+          >
+            {largeClock ? clock : greeting}
+          </h1>
           <WeatherWidget />
         </span>
       )}

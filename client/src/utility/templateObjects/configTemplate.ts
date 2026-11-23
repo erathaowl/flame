@@ -34,4 +34,6 @@ export const configTemplate: Config = {
   weatherData: 'cloud',
   hideDate: false,
   largeClock: false,
+  clockFont: 'default',
+  quoteStyle: 'normal',
 };

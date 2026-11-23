@@ -33,4 +33,6 @@ export interface Config {
   weatherData: WeatherData;
   hideDate: boolean;
   largeClock: boolean;
+  clockFont: string;
+  quoteStyle: string;
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import axios from 'axios';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,17 +14,36 @@ import { UISettingsForm } from '../../../interfaces';
 import { InputGroup, Button, SettingsHeadline } from '../../UI';
 
 // Utils
-import { uiSettingsTemplate, inputHandler } from '../../../utility';
+import { uiSettingsTemplate, inputHandler, applyAuth } from '../../../utility';
+import { clockFonts } from '../../../utility/clockFonts';
 import { QuoteSettings } from './QuoteSettings';
 
 export const UISettings = (): JSX.Element => {
   const { loading, config } = useSelector((state: State) => state.config);
 
   const dispatch = useDispatch();
-  const { updateConfig } = bindActionCreators(actionCreators, dispatch);
+  const { getConfig, createNotification } = bindActionCreators(actionCreators, dispatch);
 
   // Initial state
   const [formData, setFormData] = useState<UISettingsForm>(uiSettingsTemplate);
+  const [quotes, setQuotes] = useState('');
+  const [quotesLoaded, setQuotesLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    axios.get<{ data: string[] }>('/api/quotes', { headers: applyAuth() })
+      .then((response) => {
+        if (active) setQuotes(response.data.data.join('\n'));
+      })
+      .catch(() => {
+        if (active) createNotification({ title: 'Error', message: 'Failed to load quotes' });
+      })
+      .finally(() => {
+        if (active) setQuotesLoaded(true);
+      });
+    return () => { active = false; };
+  }, []);
 
   // Get config
   useEffect(() => {
@@ -36,11 +56,21 @@ export const UISettings = (): JSX.Element => {
   const formSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Save settings
-    await updateConfig(formData);
-
-    // Update local page title
-    document.title = formData.customTitle;
+    if (!quotesLoaded || saving) return;
+    setSaving(true);
+    try {
+      await axios.put('/api/interface', {
+        config: formData,
+        quotes: quotes.split('\n').map((text) => text.trim()).filter(Boolean),
+      }, { headers: applyAuth() });
+      await getConfig();
+      document.title = formData.customTitle;
+      createNotification({ title: 'Success', message: 'Interface settings saved' });
+    } catch {
+      createNotification({ title: 'Error', message: 'Failed to save interface settings' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Input handler
@@ -178,6 +208,38 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
+        {formData.largeClock && (
+          <InputGroup>
+            <label htmlFor="clockFont">Large clock font</label>
+            <select
+              id="clockFont"
+              name="clockFont"
+              value={formData.clockFont || 'default'}
+              onChange={(e) => inputChangeHandler(e)}
+            >
+              {clockFonts.map(({ value, label }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <span>Additional LCD fonts require local installation. See the clock font guide.</span>
+          </InputGroup>
+        )}
+
+        <InputGroup>
+          <label htmlFor="quoteStyle">Quote style</label>
+          <select
+            id="quoteStyle"
+            name="quoteStyle"
+            value={formData.quoteStyle || 'normal'}
+            onChange={(e) => inputChangeHandler(e)}
+          >
+            <option value="normal">Normal</option>
+            <option value="italic">Italic</option>
+            <option value="dimmed">Dimmed</option>
+            <option value="italic-dimmed">Italic dimmed</option>
+          </select>
+        </InputGroup>
+
         {/* CUSTOM GREETINGS */}
         <InputGroup>
           <label htmlFor="greetingsSchema">Custom greetings</label>
@@ -253,9 +315,11 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
-        <Button>Save changes</Button>
+        <QuoteSettings quotes={quotes} onChange={setQuotes} />
+        <Button disabled={!quotesLoaded || saving}>
+          {saving ? 'Saving...' : 'Save changes'}
+        </Button>
       </form>
-    <QuoteSettings />
     </>
   );
 };

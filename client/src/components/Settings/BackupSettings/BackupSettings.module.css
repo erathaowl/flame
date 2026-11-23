@@ -1,0 +1,18 @@
+.BackupSettings {
+  color: var(--color-primary);
+}
+
+.Description {
+  color: var(--color-primary);
+  line-height: 1.5;
+  margin: 10px 0 18px;
+}
+
+.Export {
+  margin-bottom: 22px;
+}
+
+.Message {
+  color: var(--color-primary);
+  margin-top: 12px;
+}

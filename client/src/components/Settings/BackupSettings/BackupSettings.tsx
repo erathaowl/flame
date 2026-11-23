@@ -4,7 +4,8 @@ import { useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { actionCreators } from '../../../store';
 import { applyAuth } from '../../../utility';
-import { InputGroup, SettingsHeadline } from '../../UI';
+import { Button, InputGroup, SettingsHeadline } from '../../UI';
+import classes from './BackupSettings.module.css';
 
 export const BackupSettings = (): JSX.Element => {
   const [busy, setBusy] = useState(false);
@@ -67,12 +68,14 @@ export const BackupSettings = (): JSX.Element => {
   };
 
   return (
-    <section>
+    <section className={classes.BackupSettings}>
       <SettingsHeadline text="Applications and bookmarks backup" />
-      <p>Export or restore all applications, categories and bookmarks as YAML, including visibility, pinning and custom order.</p>
-      <button type="button" onClick={exportYaml} disabled={busy}>
-        Export YAML
-      </button>
+      <p className={classes.Description}>Export or restore all applications, categories and bookmarks as YAML, including visibility, pinning and custom order.</p>
+      <div className={classes.Export}>
+        <Button type="button" click={exportYaml} disabled={busy}>
+          Export YAML
+        </Button>
+      </div>
       <InputGroup>
         <label htmlFor="backupFile">Import YAML (replaces existing entries)</label>
         <input
@@ -84,7 +87,7 @@ export const BackupSettings = (): JSX.Element => {
         />
         <span>Uploaded custom icon files are not part of the YAML backup.</span>
       </InputGroup>
-      {message && <p role="status">{message}</p>}
+      {message && <p className={classes.Message} role="status">{message}</p>}
     </section>
   );
 };

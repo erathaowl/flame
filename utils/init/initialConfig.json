@@ -30,5 +30,7 @@
   "isKilometer": true,
   "weatherData": "cloud",
   "hideDate": false,
-  "largeClock": false
+  "largeClock": false,
+  "clockFont": "default",
+  "quoteStyle": "normal"
 }
