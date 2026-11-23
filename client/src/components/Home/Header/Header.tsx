@@ -95,14 +95,15 @@ export const Header = (): JSX.Element => {
 
   const clock = now.toLocaleTimeString('en-GB', { hour12: false });
   const greeting = quote || greeter();
-  const fontFamily = getClockFontFamily(clockFont || 'default');
+  const effectiveClockFont = clockFont === 'doto' ? 'matrix-mono-screen' : (clockFont || 'default');
+  const fontFamily = getClockFontFamily(effectiveClockFont) || 'Roboto, sans-serif';
   const clockAppearance: CSSProperties = {
     fontFamily,
     fontSize: clockSize === 'auto' ? `${autoClockFontSize}px` : `min(${clockSizes[clockSize] || clockSizes.normal}, 12vw)`,
     fontWeight: clockStyle?.includes('bold') ? 700 : 400,
     fontStyle: clockStyle?.includes('italic') ? 'italic' : 'normal',
-    fontSynthesis: isLocalClockFont(clockFont || '') ? 'none' : undefined,
-    fontVariantNumeric: isLocalClockFont(clockFont || '') ? 'normal' : undefined,
+    fontSynthesis: isLocalClockFont(effectiveClockFont) ? 'none' : undefined,
+    fontVariantNumeric: isLocalClockFont(effectiveClockFont) ? 'normal' : undefined,
   };
   const quoteClass = quote ? [
     quoteStyle?.includes('italic') ? classes.Italic : '',

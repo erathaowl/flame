@@ -26,6 +26,7 @@ serve the production frontend through Flame:
 ```sh
 npm install --no-save --package-lock=false @playwright/test@1.56.1
 sh scripts/install-open-clock-fonts.sh client/public/clock-fonts
+CI=false npm run build --prefix client
 npx playwright install --with-deps chromium
 mkdir -p public
 cp -a client/build/. public/
@@ -49,7 +50,7 @@ workspace.
 | YAML export, import, validation, rollback | Yes | Yes | Yes |
 | Random quotes, empty/invalid lists | No | Yes | Yes |
 | Gatus status colors, cache and privacy | Yes | Yes | Indirect |
-| Header layout and quote presentation | No | Indirect | Yes |
+| Header layout, mobile weather, clock font selection and LCD glyphs | No | Indirect | Yes |
 | Docker/Kubernetes synchronization | Yes (mocked) | No | No |
 
 The HTTP suite uses the real Express routes, SQLite migrations and
@@ -61,8 +62,9 @@ services are needed.
 The Chromium test exercises login, application and bookmark forms,
 visibility actions, YAML download/upload, guest filtering, keyboard
 reordering of application rows, the single atomic interface save, all four
-quote styles, the clock layout, clock size and font style, and the bundled
-JetBrainsMono font asset.
+quote styles, mobile clock layout and weather alignment, font selection,
+the bundled JetBrainsMono, DSEG7 Classic and Matrix Mono Screen assets,
+and the removal of the retired Doto font.
 
 ## Remaining limitations
 

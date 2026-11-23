@@ -56,20 +56,21 @@ Flame bundles the following original, redistributable LCD-style font families:
   a traditional seven-segment digital display with regular and bold faces.
   The image installs `DSEG7Classic-Regular.woff2` and
   `DSEG7Classic-Bold.woff2` from the official v0.46 release ZIP.
-- **[Doto](https://github.com/oliverlalan/Doto)**: a geometric
-  dot-matrix face, bundled as a variable WOFF2 font.
 - **[Matrix Mono Screen](https://github.com/FriedOrange/MatrixSans/releases/tag/v1.811)**:
   a monospaced 5×7 grid of individually separated square dots, similar to
   classic character LCDs. The image includes `MatrixMonoScreen-Regular.ttf`
   from the official v1.811 release.
 
-All three families are licensed under **SIL Open Font License 1.1**. Their
-respective license files (`LICENSE-DSEG.txt`, `LICENSE-Doto.txt`, and
-`LICENSE-MatrixSans.txt`) are included next to the font files in the
-built image. The installer downloads original font files without changes,
-and all three fonts are always listed in Settings. Matrix Mono Screen
-uses its original Regular outline also when the Bold clock style is
-selected, preserving the spacing between its square pixels.
+Both families are licensed under **SIL Open Font License 1.1**. Their
+license files (`LICENSE-DSEG.txt` and `LICENSE-MatrixSans.txt`) are
+included alongside the original font files in the built image. Both fonts
+are always listed in Settings. Matrix Mono Screen preserves its original
+Regular outline when Bold is selected, maintaining the gaps between pixels.
+
+Doto was removed from the bundled font list in v2.6.4. Instances that
+previously selected it automatically display Matrix Mono Screen; saving
+Interface settings replaces the retired selection. This does not delete
+user-installed fonts in the persistent `data/clock-fonts` directory.
 
 ## Optional LCD fonts
 
@@ -119,8 +120,8 @@ especially on publicly accessible dashboards.
 
 ## Browser cache and troubleshooting
 
-Flame serves bundled Nerd Fonts from the compiled public assets and optional
-LCD fonts from the persistent `data/clock-fonts` directory. The
+Flame serves bundled Nerd and LCD fonts from the compiled public assets and
+optional fonts from the persistent `data/clock-fonts` directory. The
 `/clock-fonts/*` requests are revalidated on each load, as are the
 `/clock-fonts.css` stylesheet and the main HTML page. Hashed JavaScript
 and CSS bundles retain immutable caching.

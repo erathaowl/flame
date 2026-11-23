@@ -66,6 +66,7 @@ export const UISettings = (): JSX.Element => {
   useEffect(() => {
     setFormData({
       ...config,
+      clockFont: config.clockFont === 'doto' ? 'matrix-mono-screen' : config.clockFont,
     });
   }, [loading]);
 
