@@ -267,7 +267,7 @@ export const UISettings = (): JSX.Element => {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <span>Additional LCD fonts require local installation. See the clock font guide.</span>
+          <span>LCD fonts require local installation. If a font is unavailable, the browser uses a fallback. See the clock font guide.</span>
         </InputGroup>
 
         <InputGroup>
