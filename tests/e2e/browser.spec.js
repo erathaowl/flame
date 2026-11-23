@@ -111,11 +111,13 @@ test('browser: bundled LCD faces load correctly', async ({ page }) => {
   const fontSelector = page.getByLabel('Font', { exact: true });
   await expect(fontSelector.locator('option[value="dseg7"]')).toHaveCount(1);
   await expect(fontSelector.locator('option[value="doto"]')).toHaveCount(1);
+  await expect(fontSelector.locator('option[value="matrix-mono-screen"]')).toHaveCount(1);
 
   for (const filename of [
     'DSEG7Classic-Regular.woff2',
     'DSEG7Classic-Bold.woff2',
     'Doto.woff2',
+    'MatrixMonoScreen-Regular.ttf',
   ]) {
     const response = await page.request.get(`/clock-fonts/${filename}`);
     expect(response.status()).toBe(200);
@@ -128,9 +130,51 @@ test('browser: bundled LCD faces load correctly', async ({ page }) => {
     const dseg = await document.fonts.load('400 50px "DSEG7 Classic"', '0123456789:');
     const dsegBold = await document.fonts.load('700 50px "DSEG7 Classic"', '0123456789:');
     const doto = await document.fonts.load('400 50px "Doto"', '0123456789:');
-    return [dseg.length, dsegBold.length, doto.length];
+    const matrix = await document.fonts.load('400 50px "Matrix Mono Screen"', '0123456789:');
+    return [dseg.length, dsegBold.length, doto.length, matrix.length];
   });
-  expect(loaded).toEqual([1, 1, 1]);
+  expect(loaded).toEqual([1, 1, 1, 1]);
+});
+
+test('browser: square-dot clock font renders digits and separators', async ({ page }) => {
+  await login(page);
+
+  const token = await page.evaluate(() => localStorage.getItem('token'));
+  const headers = { 'Authorization-Flame': `Bearer ${token}` };
+  const original = (await (await page.request.get('/api/config')).json()).data;
+
+  try {
+    const updated = await page.request.put('/api/config', {
+      headers,
+      data: { largeClock: true, clockFont: 'matrix-mono-screen', clockStyle: 'bold' },
+    });
+    expect(updated.ok()).toBe(true);
+
+    await page.goto('/');
+    const clock = page.locator('header h1');
+    await expect(clock).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
+    await expect(clock).toHaveCSS('font-family', /Matrix Mono Screen/);
+    await expect(clock).toHaveCSS('font-synthesis', 'none');
+
+    const loaded = await page.evaluate(async () => {
+      await document.fonts.load('400 60px "Matrix Mono Screen"', '0123456789:');
+      const font = [...document.fonts].find(
+        (face) => face.family === 'Matrix Mono Screen'
+      );
+      return font?.status === 'loaded' &&
+        document.fonts.check('400 60px "Matrix Mono Screen"', '0123456789:');
+    });
+    expect(loaded).toBe(true);
+  } finally {
+    await page.request.put('/api/config', {
+      headers,
+      data: {
+        largeClock: original.largeClock,
+        clockFont: original.clockFont,
+        clockStyle: original.clockStyle,
+      },
+    });
+  }
 });
 
 test('browser: quote, settings link and LCD clock remain separate on mobile', async ({ browser }) => {

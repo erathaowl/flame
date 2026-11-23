@@ -17,6 +17,7 @@ export const clockFonts: ClockFont[] = [
   { value: '3270', label: '3270 Nerd Font', family: '"3270 Nerd Font", monospace' },
   { value: 'dseg7', label: 'DSEG7 Classic (7-segment LCD)', family: '"DSEG7 Classic", monospace' },
   { value: 'doto', label: 'Doto (dot-matrix LCD)', family: '"Doto", monospace' },
+  { value: 'matrix-mono-screen', label: 'Matrix Mono Screen (square-dot LCD)', family: '"Matrix Mono Screen", monospace' },
   { value: 'lcddot', label: 'LCD Dot', family: '"LCD Dot", monospace' },
   { value: 'cf-lcd-521', label: 'CF LCD 521', family: '"CF LCD 521", monospace' },
   { value: 'modern-lcd-7', label: 'Modern LCD-7', family: '"Modern LCD-7", monospace' },
@@ -44,7 +45,9 @@ export const getClockFontFamily = (value: string): string | undefined => {
 };
 
 export const isLocalClockFont = (value: string): boolean =>
-  value.startsWith('local:') || Object.prototype.hasOwnProperty.call(optionalFontFiles, value);
+  value.startsWith('local:') ||
+  value === 'matrix-mono-screen' ||
+  Object.prototype.hasOwnProperty.call(optionalFontFiles, value);
 
 export const availableClockFonts = (installed: string[]): ClockFont[] => {
   const installedNames = new Set(installed.map((file) => file.toLowerCase()));
