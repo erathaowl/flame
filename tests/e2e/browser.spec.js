@@ -165,6 +165,8 @@ test('browser: quote, settings link and LCD clock remain separate on mobile', as
           settingsBottom: settings.getBoundingClientRect().bottom,
           clockTop: clock.getBoundingClientRect().top,
           clockFamily: window.getComputedStyle(clock).fontFamily,
+          clockRowMarginTop: window.getComputedStyle(clock.parentElement).marginTop,
+          clockRowMarginBottom: window.getComputedStyle(clock.parentElement).marginBottom,
           viewportMeta: document.querySelector('meta[name="viewport"]')?.getAttribute('content'),
           touchAction: window.getComputedStyle(document.documentElement).touchAction,
         };
@@ -172,7 +174,9 @@ test('browser: quote, settings link and LCD clock remain separate on mobile', as
 
       expect(layout).not.toBeNull();
       expect(layout.settingsTop - layout.quoteBottom).toBeGreaterThanOrEqual(16);
-      expect(layout.clockTop - layout.settingsBottom).toBeGreaterThanOrEqual(20);
+      expect(layout.clockTop - layout.settingsBottom).toBeGreaterThanOrEqual(48);
+      expect(layout.clockRowMarginTop).toBe('56px');
+      expect(layout.clockRowMarginBottom).toBe('0px');
       expect(layout.clockFamily).toContain(font === 'dseg7' ? 'DSEG7 Classic' : 'Doto');
       expect(layout.viewportMeta).toContain('user-scalable=no');
       expect(layout.viewportMeta).toContain('maximum-scale=1');
