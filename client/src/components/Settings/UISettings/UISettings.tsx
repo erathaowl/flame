@@ -225,21 +225,6 @@ export const UISettings = (): JSX.Element => {
           </InputGroup>
         )}
 
-        <InputGroup>
-          <label htmlFor="quoteStyle">Quote style</label>
-          <select
-            id="quoteStyle"
-            name="quoteStyle"
-            value={formData.quoteStyle || 'normal'}
-            onChange={(e) => inputChangeHandler(e)}
-          >
-            <option value="normal">Normal</option>
-            <option value="italic">Italic</option>
-            <option value="dimmed">Dimmed</option>
-            <option value="italic-dimmed">Italic dimmed</option>
-          </select>
-        </InputGroup>
-
         {/* CUSTOM GREETINGS */}
         <InputGroup>
           <label htmlFor="greetingsSchema">Custom greetings</label>
@@ -315,7 +300,12 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
-        <QuoteSettings quotes={quotes} onChange={setQuotes} />
+        <QuoteSettings
+          quotes={quotes}
+          onChange={setQuotes}
+          style={formData.quoteStyle || 'normal'}
+          onStyleChange={(value) => setFormData({ ...formData, quoteStyle: value })}
+        />
         <Button disabled={!quotesLoaded || saving}>
           {saving ? 'Saving...' : 'Save changes'}
         </Button>
