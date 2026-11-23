@@ -47,9 +47,9 @@ The workflow also accepts a release request committed to
 release version, and the workflow creates the normalized Git tag.
 
 ```sh
-git tag v2.6.1
-git push origin v2.6.1
-docker pull ghcr.io/erathaowl/flame:v2.6.1
+git tag v2.6.3
+git push origin v2.6.3
+docker pull ghcr.io/erathaowl/flame:v2.6.3
 ```
 
 Release notes are generated from GitHub history. Existing releases are never
@@ -86,7 +86,10 @@ Quotes are persisted in SQLite and one is chosen randomly each time the
 homepage loads. Choose the quote style (normal, italic, dimmed, or italic
 dimmed). A separate **Clock** section lets you set the font, size (small,
 normal, large, extra large), and style (normal, bold, italic, bold italic)
-for the large clock. An empty library falls back to the existing
+for the large clock. The font selector detects optional LCD and custom font
+files installed in `data/clock-fonts`, while keeping system and bundled
+fonts available. See [clock font setup](docs/clock-fonts.md). An empty
+library falls back to the existing
 time-of-day greetings. The library does not impose a four-quote limit.
 
 ## SQLite settings storage
@@ -122,13 +125,13 @@ Use the fork's published multi-platform images for `linux/amd64` or
 `latest` to follow the current `master` build.
 
 ```sh
-docker pull ghcr.io/erathaowl/flame:v2.6.1
+docker pull ghcr.io/erathaowl/flame:v2.6.3
 
 docker run -d --name flame -p 5005:5005 \
   -v /path/to/data:/app/data \
   -e PASSWORD=change_me \
   --restart unless-stopped \
-  ghcr.io/erathaowl/flame:v2.6.1
+  ghcr.io/erathaowl/flame:v2.6.3
 ```
 
 Use a strong password, protect access to port 5005, and keep the persistent
@@ -159,7 +162,7 @@ the password outside the image and refer to the mounted secret file.
 ```yaml
 services:
   flame:
-    image: ghcr.io/erathaowl/flame:v2.6.1
+    image: ghcr.io/erathaowl/flame:v2.6.3
     ports:
       - "5005:5005"
     volumes:
