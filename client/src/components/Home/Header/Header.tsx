@@ -110,7 +110,7 @@ export const Header = (): JSX.Element => {
   ].filter(Boolean).join(' ') : '';
 
   return (
-    <header className={classes.Header}>
+    <header className={`${classes.Header} ${largeClock ? classes.LargeClockHeader : ''}`}>
       {largeClock ? (
         !hideHeader && <p className={`${classes.SmallQuote} ${quoteClass}`}>{greeting}</p>
       ) : (

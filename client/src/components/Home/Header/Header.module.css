@@ -22,13 +22,15 @@
 }
 
 .SettingsLink {
-  visibility: visible;
+  display: block;
+  width: fit-content;
   color: var(--color-accent);
+  line-height: 1.5;
 }
 
 @media (min-width: 769px) {
   .SettingsLink {
-    visibility: hidden;
+    display: none;
   }
 }
 
@@ -36,7 +38,22 @@
   text-transform: none;
   height: auto;
   min-height: 30px;
+  line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+.LargeClockHeader .SmallQuote {
+  margin-bottom: 1.5rem;
+}
+
+.LargeClockHeader .HeaderMain {
+  margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .LargeClockHeader .SettingsLink {
+    margin-bottom: 1rem;
+  }
 }
 
 .Clock {

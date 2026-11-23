@@ -8,6 +8,11 @@ library. The font selector discovers installed files automatically through
 System fonts and bundled Nerd Fonts remain available at all times. Optional
 LCD fonts appear only when their files exist in `data/clock-fonts`.
 
+The large-clock header reserves extra vertical space below the quote and
+the mobile Settings link, so fonts with unusual glyph metrics do not
+overlap adjacent text. On mobile, zoom is disabled by the page viewport
+configuration (this also restricts accessibility magnification).
+
 Sizes: Auto (default), Small (2.5rem), Normal (3.5rem), Large (4.5rem),
 and Extra large (5.5rem). Auto aligns the clock to the left and matches its
 line height to the weather widget, reducing the font size when needed to
@@ -42,6 +47,22 @@ npm run build --prefix client
 
 The installer also extracts the font license from the source archive
 when present. Consult the [Nerd Fonts license documentation](https://github.com/ryanoasis/nerd-fonts#license).
+
+## Bundled LCD fonts
+
+Flame also bundles two original, redistributable LCD-style font families:
+
+- **[DSEG7 Classic](https://github.com/keshikan/DSEG/releases/tag/v0.46)**:
+  a traditional seven-segment digital display with regular and bold faces.
+  The image installs `DSEG7Classic-Regular.woff2` and
+  `DSEG7Classic-Bold.woff2` from the official v0.46 release ZIP.
+- **[Doto](https://github.com/oliverlalan/Doto)**: a geometric
+  dot-matrix face, bundled as a variable WOFF2 font.
+
+Both are licensed under **SIL Open Font License 1.1**. Their respective
+license files (`LICENSE-DSEG.txt` and `LICENSE-Doto.txt`) are included
+next to the font files in the built image. The installer downloads original
+font files without changes, and both fonts are always listed in Settings.
 
 ## Optional LCD fonts
 
