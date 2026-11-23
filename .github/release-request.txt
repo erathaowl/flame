@@ -1,2 +1,2 @@
-v2.6.3
-# Discover installed LCD and custom clock fonts and preserve LCD rendering.
+v2.6.4
+# Remove Doto and release mobile layout, weather, and LCD font improvements.

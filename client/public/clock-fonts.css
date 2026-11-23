@@ -31,14 +31,6 @@
 }
 
 @font-face {
-  font-family: 'Doto';
-  src: url('/clock-fonts/Doto.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
   font-family: 'Matrix Mono Screen';
   src: url('/clock-fonts/MatrixMonoScreen-Regular.ttf') format('truetype');
   font-style: normal;

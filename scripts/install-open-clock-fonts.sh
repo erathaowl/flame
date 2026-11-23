@@ -52,16 +52,8 @@ curl -fsSL --retry 3 \
   "https://raw.githubusercontent.com/keshikan/DSEG/a32644015f2c81b98bc6a80e897770780003b15e/DSEG-LICENSE.txt" \
   -o "$destination/LICENSE-DSEG.txt"
 
-# Doto is distributed under SIL Open Font License 1.1.
-doto_commit="1c587f2eed62cb257055540ac2a15f356070414f"
-curl -fsSL --retry 3 \
-  "https://raw.githubusercontent.com/oliverlalan/Doto/$doto_commit/fonts/webfonts/Doto%5BROND%2Cwght%5D.woff2" \
-  -o "$destination/Doto.woff2"
-test -s "$destination/Doto.woff2"
-curl -fsSL --retry 3 \
-  "https://raw.githubusercontent.com/oliverlalan/Doto/$doto_commit/OFL.txt" \
-  -o "$destination/LICENSE-Doto.txt"
-echo "Installed Doto.woff2"
+# Remove assets from builds that included the retired Doto font.
+rm -f "$destination/Doto.woff2" "$destination/LICENSE-Doto.txt"
 
 # Matrix Mono Screen uses separated square 5x7 dots (SIL OFL 1.1).
 matrix_archive="$temp_dir/matrix-sans.zip"
