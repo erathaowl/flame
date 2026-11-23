@@ -1,2 +1,2 @@
 v2.6.1
-# Retry publication with fixed clock font CSS.
+# Publish the fixed font assets and corrected end-to-end verification.
