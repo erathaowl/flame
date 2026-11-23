@@ -31,7 +31,11 @@ export const getApps =
         payload: res.data.data,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      dispatch({
+        type: ActionType.getAppsError,
+        payload: 'Failed to load applications',
+      });
     }
   };
 
