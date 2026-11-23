@@ -8,9 +8,14 @@ library. The font selector discovers installed files automatically through
 System fonts and bundled Nerd Fonts remain available at all times. Optional
 LCD fonts appear only when their files exist in `data/clock-fonts`.
 
-Sizes: Small (2.5rem), Normal (3.5rem), Large (4.5rem), and Extra large
-(5.5rem). The browser limits the rendered size to 12vw to keep the clock
-usable on small screens. Font styles: Normal, Bold, Italic, and Bold italic.
+Sizes: Auto (default), Small (2.5rem), Normal (3.5rem), Large (4.5rem),
+and Extra large (5.5rem). Auto aligns the clock to the left and matches its
+line height to the weather widget, reducing the font size when needed to
+keep both items on the same row on narrow screens. If weather is unavailable,
+Auto uses the Extra large height as a starting point. The other four sizes
+retain their existing dimensions, with a 12vw maximum for small screens.
+The weather widget is also visible on mobile when configured and when
+weather data is available. Font styles: Normal, Bold, Italic, and Bold italic.
 The default style is Bold, matching the previous large clock.
 
 Common system fonts (Roboto, Arial, Helvetica,

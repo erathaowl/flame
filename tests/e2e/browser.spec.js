@@ -104,6 +104,63 @@ test('browser: application and bookmark management with YAML backup', async ({ p
   });
 });
 
+test('browser: auto clock and weather appear side by side on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page);
+
+  const token = await page.evaluate(() => localStorage.getItem('token'));
+  const headers = { 'Authorization-Flame': `Bearer ${token}` };
+  const original = (await (await page.request.get('/api/config')).json()).data;
+
+  await page.route('**/api/weather', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      data: [{ id: 1, tempC: 22, tempF: 72, cloud: 35, isDay: 1, conditionCode: 1000 }],
+    }),
+  }));
+
+  try {
+    const updated = await page.request.put('/api/config', {
+      headers,
+      data: { largeClock: true, clockSize: 'auto', WEATHER_API_KEY: 'test-weather-key' },
+    });
+    expect(updated.ok()).toBe(true);
+
+    await page.goto('/');
+    await expect(page.locator('#weather-icon')).toBeVisible();
+    const clock = page.locator('header h1');
+    await expect(clock).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
+    await expect.poll(() => clock.evaluate((element) => {
+      const weather = document.querySelector('[data-testid="weather-slot"]');
+      if (!weather) return false;
+      const clockBox = element.getBoundingClientRect();
+      const weatherBox = weather.getBoundingClientRect();
+      return Math.abs(clockBox.height - weatherBox.height) <= 2 &&
+        clockBox.left < weatherBox.left &&
+        clockBox.right <= weatherBox.left;
+    })).toBe(true);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const extraLarge = await page.request.put('/api/config', {
+      headers,
+      data: { clockSize: 'extra-large' },
+    });
+    expect(extraLarge.ok()).toBe(true);
+    await page.reload();
+    await expect(page.locator('header h1')).toHaveCSS('font-size', '88px');
+  } finally {
+    await page.request.put('/api/config', {
+      headers,
+      data: {
+        largeClock: original.largeClock,
+        clockSize: original.clockSize,
+        WEATHER_API_KEY: original.WEATHER_API_KEY,
+      },
+    });
+  }
+});
+
 test('browser: clock font selector lists installed fonts only', async ({ page }) => {
   await login(page);
 

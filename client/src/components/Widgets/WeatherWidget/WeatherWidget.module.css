@@ -1,6 +1,5 @@
 .WeatherWidget {
   display: flex;
-  visibility: hidden;
 }
 
 .WeatherDetails {
@@ -22,8 +21,3 @@
   padding-top: 5px;
 }
 
-@media (min-width: 600px) {
-  .WeatherWidget {
-    visibility: visible;
-  }
-}

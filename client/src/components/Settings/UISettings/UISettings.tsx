@@ -304,11 +304,12 @@ export const UISettings = (): JSX.Element => {
           <select
             id="clockSize"
             name="clockSize"
-            value={formData.clockSize || 'normal'}
+            value={formData.clockSize || 'auto'}
             onChange={(e) => inputChangeHandler(e)}
           >
+            <option value="auto">Auto (default, matches weather height)</option>
             <option value="small">Small</option>
-            <option value="normal">Normal (default)</option>
+            <option value="normal">Normal</option>
             <option value="large">Large</option>
             <option value="extra-large">Extra large</option>
           </select>

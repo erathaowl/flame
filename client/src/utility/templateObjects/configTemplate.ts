@@ -35,7 +35,7 @@ export const configTemplate: Config = {
   hideDate: false,
   largeClock: false,
   clockFont: 'default',
-  clockSize: 'normal',
+  clockSize: 'auto',
   clockStyle: 'bold',
   quoteStyle: 'normal',
 };
