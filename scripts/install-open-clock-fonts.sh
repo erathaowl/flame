@@ -77,8 +77,7 @@ fi
 unzip -p "$matrix_archive" "$matrix_entry" > "$destination/$matrix_file"
 test -s "$destination/$matrix_file"
 
-matrix_license="$(unzip -Z1 "$matrix_archive" | grep -E '(^|/)OFL\.txt
- | head -n 1 || true)"
+matrix_license="$(unzip -Z1 "$matrix_archive" | grep -E '(^|/)OFL\.txt$' | head -n 1 || true)"
 if [ -z "$matrix_license" ]; then
   echo "Matrix Sans license was not found in the release archive" >&2
   exit 1
