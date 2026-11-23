@@ -147,6 +147,15 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
     await expect(headline).toHaveCSS('opacity', opacity);
     await page.goto('/settings/interface');
   }
+
+  await page.getByLabel('Header layout').selectOption('1');
+  await submit(page, 'PUT', '/api/interface',
+    page.getByRole('button', { name: 'Save changes' }));
+  await page.goto('/');
+  const clock = page.locator('header h1');
+  await expect(clock).toHaveCSS('font-size', '40px');
+  await expect(clock).toHaveCSS('font-weight', '400');
+  await expect(clock).toHaveCSS('font-style', 'normal');
 });
 
 test('browser: keyboard reordering persists the new application order', async ({ page }) => {

@@ -61,7 +61,8 @@ services are needed.
 The Chromium test exercises login, application and bookmark forms,
 visibility actions, YAML download/upload, guest filtering, keyboard
 reordering of application rows, the single atomic interface save, all four
-quote styles, the clock layout, and the bundled JetBrainsMono font asset.
+quote styles, the clock layout, clock size and font style, and the bundled
+JetBrainsMono font asset.
 
 ## Remaining limitations
 
