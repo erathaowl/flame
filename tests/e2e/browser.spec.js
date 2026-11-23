@@ -130,7 +130,7 @@ test('browser: auto clock and weather appear side by side on mobile', async ({ p
     await page.goto('/');
     await expect(page.locator('#weather-icon')).toBeVisible();
     const clock = page.locator('header h1');
-    await expect(clock).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
+    await expect(clock).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
     await expect.poll(() => clock.evaluate((element) => {
       const weather = document.querySelector('[data-testid="weather-slot"]');
       if (!weather) return false;
