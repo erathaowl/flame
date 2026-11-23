@@ -62,3 +62,27 @@ curl -fsSL --retry 3 \
   "https://raw.githubusercontent.com/oliverlalan/Doto/$doto_commit/OFL.txt" \
   -o "$destination/LICENSE-Doto.txt"
 echo "Installed Doto.woff2"
+
+# Matrix Mono Screen uses separated square 5x7 dots (SIL OFL 1.1).
+matrix_archive="$temp_dir/matrix-sans.zip"
+curl -fsSL --retry 3 \
+  "https://github.com/FriedOrange/MatrixSans/releases/download/v1.811/MatrixSans-v1.811.zip" \
+  -o "$matrix_archive"
+matrix_file="MatrixMonoScreen-Regular.ttf"
+matrix_entry="$(unzip -Z1 "$matrix_archive" | grep -E "(^|/)$matrix_file$" | head -n 1 || true)"
+if [ -z "$matrix_entry" ]; then
+  echo "Font $matrix_file was not found in the Matrix Sans release" >&2
+  exit 1
+fi
+unzip -p "$matrix_archive" "$matrix_entry" > "$destination/$matrix_file"
+test -s "$destination/$matrix_file"
+
+matrix_license="$(unzip -Z1 "$matrix_archive" | grep -E '(^|/)OFL\.txt$' | head -n 1 || true)"
+if [ -z "$matrix_license" ]; then
+  echo "Matrix Sans license was not found in the release archive" >&2
+  exit 1
+fi
+unzip -p "$matrix_archive" "$matrix_license" > "$destination/LICENSE-MatrixSans.txt"
+test -s "$destination/LICENSE-MatrixSans.txt"
+echo "Installed $matrix_file"
+

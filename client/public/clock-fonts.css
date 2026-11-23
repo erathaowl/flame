@@ -39,6 +39,14 @@
 }
 
 @font-face {
+  font-family: 'Matrix Mono Screen';
+  src: url('/clock-fonts/MatrixMonoScreen-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'LCD Dot';
   src: url('/clock-fonts/lcddot_tr.ttf') format('truetype');
   font-style: normal;

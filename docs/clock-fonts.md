@@ -50,7 +50,7 @@ when present. Consult the [Nerd Fonts license documentation](https://github.com/
 
 ## Bundled LCD fonts
 
-Flame also bundles two original, redistributable LCD-style font families:
+Flame bundles the following original, redistributable LCD-style font families:
 
 - **[DSEG7 Classic](https://github.com/keshikan/DSEG/releases/tag/v0.46)**:
   a traditional seven-segment digital display with regular and bold faces.
@@ -58,11 +58,18 @@ Flame also bundles two original, redistributable LCD-style font families:
   `DSEG7Classic-Bold.woff2` from the official v0.46 release ZIP.
 - **[Doto](https://github.com/oliverlalan/Doto)**: a geometric
   dot-matrix face, bundled as a variable WOFF2 font.
+- **[Matrix Mono Screen](https://github.com/FriedOrange/MatrixSans/releases/tag/v1.811)**:
+  a monospaced 5×7 grid of individually separated square dots, similar to
+  classic character LCDs. The image includes `MatrixMonoScreen-Regular.ttf`
+  from the official v1.811 release.
 
-Both are licensed under **SIL Open Font License 1.1**. Their respective
-license files (`LICENSE-DSEG.txt` and `LICENSE-Doto.txt`) are included
-next to the font files in the built image. The installer downloads original
-font files without changes, and both fonts are always listed in Settings.
+All three families are licensed under **SIL Open Font License 1.1**. Their
+respective license files (`LICENSE-DSEG.txt`, `LICENSE-Doto.txt`, and
+`LICENSE-MatrixSans.txt`) are included next to the font files in the
+built image. The installer downloads original font files without changes,
+and all three fonts are always listed in Settings. Matrix Mono Screen
+uses its original Regular outline also when the Bold clock style is
+selected, preserving the spacing between its square pixels.
 
 ## Optional LCD fonts
 
