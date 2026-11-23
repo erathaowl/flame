@@ -314,10 +314,16 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
       assert.equal(current.clockStyle, 'bold-italic');
       assert.deepEqual(await ok('GET', '/api/quotes'), ['First quote', 'Second quote']);
 
-      await fs.mkdir(path.join(directory, 'data/clock-fonts'), { recursive: true });
-      await fs.writeFile(path.join(directory, 'data/clock-fonts/custom.ttf'), 'test-font');
-      const font = await request('GET', '/clock-fonts/custom.ttf', undefined, false);
-      assert.equal(font.status, 200);
+      const fontDir = path.join(__dirname, '../../data/clock-fonts');
+      const fontFile = path.join(fontDir, 'integration-test-font.ttf');
+      await fs.mkdir(fontDir, { recursive: true });
+      try {
+        await fs.writeFile(fontFile, 'test-font');
+        const font = await request('GET', '/clock-fonts/integration-test-font.ttf', undefined, false);
+        assert.equal(font.status, 200);
+      } finally {
+        await fs.rm(fontFile, { force: true });
+      }
     });
 
     await t.test('YAML export, malformed input and transactional rollback', async () => {
