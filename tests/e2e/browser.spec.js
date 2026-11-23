@@ -111,7 +111,7 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await expect(page.getByText('Interface settings saved')).toBeVisible();
 
   await page.goto('/');
-  await expect(page.locator('header h1')).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
+  await expect(page.locator('header h1')).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
   await expect(page.locator('header h1')).toHaveCSS('font-family', /JetBrainsMono Nerd Font/);
   await expect(page.locator('header h1')).toHaveCSS('font-size', '72px');
   await expect(page.locator('header h1')).toHaveCSS('font-weight', '700');
