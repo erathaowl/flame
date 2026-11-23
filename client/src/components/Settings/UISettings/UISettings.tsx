@@ -34,13 +34,13 @@ export const UISettings = (): JSX.Element => {
     let active = true;
     axios.get<{ data: string[] }>('/api/quotes', { headers: applyAuth() })
       .then((response) => {
-        if (active) setQuotes(response.data.data.join('\n'));
+        if (active) {
+          setQuotes(response.data.data.join('\n'));
+          setQuotesLoaded(true);
+        }
       })
       .catch(() => {
         if (active) createNotification({ title: 'Error', message: 'Failed to load quotes' });
-      })
-      .finally(() => {
-        if (active) setQuotesLoaded(true);
       });
     return () => { active = false; };
   }, []);

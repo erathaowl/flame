@@ -7,6 +7,7 @@ const api = express();
 // Static files
 api.use(express.static(join(__dirname, 'public')));
 api.use('/uploads', express.static(join(__dirname, 'data/uploads')));
+api.use('/clock-fonts', express.static(join(__dirname, 'data/clock-fonts')));
 api.get(/^\/(?!api)/, (req, res) => {
   res.sendFile(join(__dirname, 'public/index.html'));
 });
@@ -19,7 +20,6 @@ api.use('/api/apps', require('./routes/apps'));
 api.use('/api/status', require('./routes/status'));
 api.use('/api/quotes', require('./routes/quotes'));
 api.use('/api/interface', require('./routes/interface'));
-api.use('/clock-fonts', express.static(join(__dirname, 'data/clock-fonts')));
 api.use('/api/backup', require('./routes/backup'));
 api.use('/api/config', require('./routes/config'));
 api.use('/api/weather', require('./routes/weather'));

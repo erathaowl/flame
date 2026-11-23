@@ -80,8 +80,11 @@ greeting/quote with small date/time, or a **large clock with a small quote**
 below the search bar.
 
 The quote library is also managed in **Settings > Interface**. Enter one
-quote per line and save. Quotes are persisted in SQLite and one is chosen
-randomly each time the homepage loads. An empty library falls back to the
+quote per line and use the **single Save changes button** for both the
+interface settings and the quote library. This update is atomic in SQLite.
+Quotes are persisted in SQLite and one is chosen randomly each time the
+homepage loads. Choose the quote style (normal, italic, dimmed, or italic
+dimmed), and a font for the large clock. An empty library falls back to the
 existing time-of-day greetings. The library does not impose a four-quote
 limit.
 

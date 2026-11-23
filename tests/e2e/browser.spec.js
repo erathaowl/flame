@@ -93,30 +93,40 @@ test('browser: application and bookmark management with YAML backup', async ({ p
   });
 });
 
-test('browser: quote library and large clock layout', async ({ page }) => {
+test('browser: save quotes, quote styles and clock font in one form', async ({ page }) => {
   await login(page);
   await page.goto('/settings/interface');
 
   await page.getByLabel('Header layout').selectOption('1');
-  await submit(page, 'PUT', '/api/config',
-    page.getByRole('button', { name: 'Save changes' }));
+  await page.getByLabel('Large clock font').selectOption('jetbrains-mono');
+  await page.getByLabel('Quote style').selectOption('italic-dimmed');
 
   const quotes = page.getByLabel('Quotes (one per line)');
   await quotes.fill('One deterministic browser quote');
-  await submit(page, 'PUT', '/api/quotes',
-    page.getByRole('button', { name: 'Save quotes' }));
-  await expect(page.getByText('Saved 1 quotes')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(1);
+  await submit(page, 'PUT', '/api/interface',
+    page.getByRole('button', { name: 'Save changes' }));
+  await expect(page.getByText('Interface settings saved')).toBeVisible();
 
   await page.goto('/');
-  await expect(page.locator('header h1')).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
-  await expect(page.getByText('One deterministic browser quote')).toBeVisible();
+  await expect(page.locator('header h1')).toHaveText(/^\\d{2}:\\d{2}:\\d{2}$/);
+  await expect(page.locator('header h1')).toHaveCSS('font-family', /JetBrainsMono Nerd Font/);
+  const quote = page.getByText('One deterministic browser quote');
+  await expect(quote).toBeVisible();
+  await expect(quote).toHaveCSS('font-style', 'italic');
+  await expect(quote).toHaveCSS('opacity', '0.55');
 
   await page.goto('/settings/interface');
+  await expect(page.getByLabel('Large clock font')).toHaveValue('jetbrains-mono');
+  await expect(page.getByLabel('Quote style')).toHaveValue('italic-dimmed');
   await page.getByLabel('Header layout').selectOption('0');
-  await submit(page, 'PUT', '/api/config',
+  await page.getByLabel('Quote style').selectOption('normal');
+  await submit(page, 'PUT', '/api/interface',
     page.getByRole('button', { name: 'Save changes' }));
+
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText('One deterministic browser quote');
+  await expect(page.locator('header h1')).toHaveCSS('font-style', 'normal');
 });
 
 test('browser: keyboard reordering persists the new application order', async ({ page }) => {

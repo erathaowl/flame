@@ -97,6 +97,7 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
         ['POST', '/api/apps', { name: 'Denied', url: 'https://denied.example.com' }],
         ['PUT', '/api/config', { useOrdering: 'orderId' }],
         ['PUT', '/api/quotes', { quotes: ['Denied'] }],
+        ['PUT', '/api/interface', { config: {}, quotes: ['Denied'] }],
         ['GET', '/api/quotes'],
         ['GET', '/api/backup'],
         ['POST', '/api/backup', 'invalid: backup'],
@@ -260,6 +261,52 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
       assert.deepEqual(await ok('GET', '/api/quotes'), quotes);
       await ok('PUT', '/api/quotes', { quotes: [] });
       assert.equal((await ok('GET', '/api/quotes/random', undefined, false)), null);
+    });
+
+    await t.test('interface settings and quotes save together and roll back together', async () => {
+      const invalid = await request('PUT', '/api/interface', {
+        config: { quoteStyle: 'dimmed' },
+        quotes: ['Valid quote', ''],
+      }, true);
+      assert.equal(invalid.status, 400);
+
+      const updated = await ok('PUT', '/api/interface', {
+        config: {
+          quoteStyle: 'italic-dimmed',
+          clockFont: '3270',
+          largeClock: true,
+        },
+        quotes: ['First quote', 'Second quote'],
+      });
+      assert.equal(updated.clockFont, '3270');
+      assert.equal(updated.quoteStyle, 'italic-dimmed');
+      assert.equal(updated.largeClock, true);
+      assert.deepEqual(await ok('GET', '/api/quotes'), ['First quote', 'Second quote']);
+
+      const Quote = require('../../models/Quote');
+      const originalBulkCreate = Quote.bulkCreate;
+      try {
+        Quote.bulkCreate = async () => {
+          throw new Error('Simulated quote write failure');
+        };
+        const failed = await request('PUT', '/api/interface', {
+          config: { quoteStyle: 'normal', clockFont: 'arial' },
+          quotes: ['Replacement'],
+        }, true);
+        assert.equal(failed.status, 500);
+      } finally {
+        Quote.bulkCreate = originalBulkCreate;
+      }
+
+      const current = await ok('GET', '/api/config');
+      assert.equal(current.quoteStyle, 'italic-dimmed');
+      assert.equal(current.clockFont, '3270');
+      assert.deepEqual(await ok('GET', '/api/quotes'), ['First quote', 'Second quote']);
+
+      await fs.mkdir(path.join(directory, 'data/clock-fonts'), { recursive: true });
+      await fs.writeFile(path.join(directory, 'data/clock-fonts/custom.ttf'), 'test-font');
+      const font = await request('GET', '/clock-fonts/custom.ttf', undefined, false);
+      assert.equal(font.status, 200);
     });
 
     await t.test('YAML export, malformed input and transactional rollback', async () => {
