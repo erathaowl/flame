@@ -16,7 +16,8 @@ api.use('/api', (_req, res, next) => {
   res.setHeader('Cache-Control', 'no-store');
   next();
 });
-api.use('/clock-fonts', revalidate, express.static(fontDirectory, { fallthrough: false }));
+api.use('/clock-fonts', revalidate, express.static(fontDirectory));
+api.use('/clock-fonts', express.static(join(publicDirectory, 'clock-fonts'), { fallthrough: false }));
 api.use('/uploads', express.static(join(__dirname, 'data/uploads')));
 api.use(express.static(publicDirectory, {
   setHeaders(res, filePath) {
