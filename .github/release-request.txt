@@ -1,2 +1,2 @@
 v2.6.1
-# Build and publish the prepared release from master.
+# Retry publication with fixed clock font CSS.
