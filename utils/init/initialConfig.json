@@ -33,6 +33,6 @@
   "largeClock": false,
   "clockFont": "default",
   "quoteStyle": "normal",
-  "clockSize": "normal",
+  "clockSize": "auto",
   "clockStyle": "bold"
 }

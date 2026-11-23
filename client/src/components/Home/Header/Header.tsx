@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useState } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -23,6 +23,10 @@ export const Header = (): JSX.Element => {
 
   const [now, setNow] = useState(() => new Date());
   const [quote, setQuote] = useState<string | null>(null);
+  const [autoClockFontSize, setAutoClockFontSize] = useState(88);
+  const clockRef = useRef<HTMLHeadingElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const weatherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     axios.get<{ data: string | null }>('/api/quotes/random')
@@ -54,12 +58,47 @@ export const Header = (): JSX.Element => {
     };
   }, [largeClock, customFontFile]);
 
+  useEffect(() => {
+    if (!largeClock || clockSize !== 'auto') return;
+
+    const row = rowRef.current;
+    const heading = clockRef.current;
+    const weather = weatherRef.current;
+    if (!row || !heading || !weather) return;
+
+    const resize = () => {
+      const height = weather.getBoundingClientRect().height || 88;
+      const weatherWidth = weather.getBoundingClientRect().width;
+      const availableWidth = Math.max(0, row.clientWidth - weatherWidth - 16);
+      const style = window.getComputedStyle(heading);
+      const context = document.createElement('canvas').getContext('2d');
+      if (!context) return;
+
+      context.font = `${style.fontStyle} ${style.fontWeight} ${height}px ${style.fontFamily}`;
+      const textWidth = context.measureText('88:88:88').width;
+      const size = Math.max(12, Math.floor(Math.min(height, height * availableWidth / Math.max(1, textWidth))));
+      setAutoClockFontSize((current) => current === size ? current : size);
+    };
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(row);
+    observer.observe(weather);
+    document.fonts.ready.then(resize);
+    document.fonts.addEventListener('loadingdone', resize);
+    resize();
+
+    return () => {
+      observer.disconnect();
+      document.fonts.removeEventListener('loadingdone', resize);
+    };
+  }, [largeClock, clockSize, clockFont, clockStyle]);
+
   const clock = now.toLocaleTimeString('en-GB', { hour12: false });
   const greeting = quote || greeter();
   const fontFamily = getClockFontFamily(clockFont || 'default');
   const clockAppearance: CSSProperties = {
     fontFamily,
-    fontSize: `min(${clockSizes[clockSize] || clockSizes.normal}, 12vw)`,
+    fontSize: clockSize === 'auto' ? `${autoClockFontSize}px` : `min(${clockSizes[clockSize] || clockSizes.normal}, 12vw)`,
     fontWeight: clockStyle?.includes('bold') ? 700 : 400,
     fontStyle: clockStyle?.includes('italic') ? 'italic' : 'normal',
     fontSynthesis: isLocalClockFont(clockFont || '') ? 'none' : undefined,
@@ -83,15 +122,18 @@ export const Header = (): JSX.Element => {
       </Link>
 
       {!hideHeader && (
-        <span className={classes.HeaderMain}>
+        <div ref={rowRef} className={`${classes.HeaderMain} ${largeClock && clockSize === 'auto' ? classes.HeaderMainAuto : ''}`}>
           <h1
-            className={largeClock ? classes.Clock : quoteClass}
+            ref={clockRef}
+            className={largeClock ? `${classes.Clock} ${clockSize === 'auto' ? classes.ClockAuto : ''}` : quoteClass}
             style={largeClock ? clockAppearance : undefined}
           >
             {largeClock ? clock : greeting}
           </h1>
-          <WeatherWidget />
-        </span>
+          <div className={classes.WeatherSlot} ref={weatherRef} data-testid="weather-slot">
+            <WeatherWidget />
+          </div>
+        </div>
       )}
     </header>
   );
