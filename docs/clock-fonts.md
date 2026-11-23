@@ -3,7 +3,10 @@
 Under **Settings > Interface**, choose **Large clock / small quote** in
 the Header section. The dedicated **Clock** section lets you choose its
 font, size and style, using the same Save changes button as the quote
-library.
+library. The font selector discovers installed files automatically through
+`GET /api/clock-fonts`, including custom TTF, OTF, WOFF, and WOFF2 files.
+System fonts and bundled Nerd Fonts remain available at all times. Optional
+LCD fonts appear only when their files exist in `data/clock-fonts`.
 
 Sizes: Small (2.5rem), Normal (3.5rem), Large (4.5rem), and Extra large
 (5.5rem). The browser limits the rendered size to 12vw to keep the clock
@@ -64,6 +67,17 @@ font files using the filenames listed in
 [`clock-fonts.css`](../client/public/clock-fonts.css).
 No rebuild is necessary for the optional fonts because Flame serves
 this folder at `/clock-fonts`.
+
+If you install a custom font with another filename, the selector displays
+its filename without the extension, followed by `(installed)`. If the
+currently configured font disappears, the selector marks it as unavailable
+until a different font is chosen. Refresh the settings page after adding
+or removing files. For CF LCD 521, both `CF LCD 521.ttf` (installed by the
+helper) and the original `CFLCD-Regular.ttf` filename are accepted.
+
+Custom fonts and the optional LCD faces are rendered without synthetic
+bold or italic effects to preserve their LCD segment shapes. Choose Normal
+for the most faithful appearance.
 
 These assets are not included in the repository, release packages, or
 Docker images. The folder is part of the persistent data volume. Make sure

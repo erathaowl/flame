@@ -7,7 +7,7 @@ import classes from './Header.module.css';
 import { WeatherWidget } from '../../Widgets/WeatherWidget/WeatherWidget';
 import { getDateTime } from './functions/getDateTime';
 import { greeter } from './functions/greeter';
-import { clockFonts } from '../../../utility/clockFonts';
+import { getClockFontFamily, isLocalClockFont } from '../../../utility/clockFonts';
 
 const clockSizes: Record<string, string> = {
   small: '2.5rem',
@@ -34,14 +34,36 @@ export const Header = (): JSX.Element => {
     return () => window.clearInterval(timer);
   }, []);
 
+  const customFontFile = clockFont?.startsWith('local:') ? clockFont.slice(6) : '';
+
+  useEffect(() => {
+    if (!largeClock || !/^[^/\\]+\.(ttf|otf|woff2?)$/i.test(customFontFile)) return;
+
+    const family = `Flame Local ${customFontFile}`;
+    const fontUrl = `/clock-fonts/${encodeURIComponent(customFontFile)}`;
+    const face = new FontFace(family, `url(${JSON.stringify(fontUrl)})`);
+    let active = true;
+
+    face.load()
+      .then(() => { if (active) document.fonts.add(face); })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+      document.fonts.delete(face);
+    };
+  }, [largeClock, customFontFile]);
+
   const clock = now.toLocaleTimeString('en-GB', { hour12: false });
   const greeting = quote || greeter();
-  const fontFamily = clockFonts.find((font) => font.value === clockFont)?.family;
+  const fontFamily = getClockFontFamily(clockFont || 'default');
   const clockAppearance: CSSProperties = {
     fontFamily,
     fontSize: `min(${clockSizes[clockSize] || clockSizes.normal}, 12vw)`,
     fontWeight: clockStyle?.includes('bold') ? 700 : 400,
     fontStyle: clockStyle?.includes('italic') ? 'italic' : 'normal',
+    fontSynthesis: isLocalClockFont(clockFont || '') ? 'none' : undefined,
+    fontVariantNumeric: isLocalClockFont(clockFont || '') ? 'normal' : undefined,
   };
   const quoteClass = quote ? [
     quoteStyle?.includes('italic') ? classes.Italic : '',
