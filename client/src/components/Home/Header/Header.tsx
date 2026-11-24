@@ -8,6 +8,7 @@ import { WeatherWidget } from '../../Widgets/WeatherWidget/WeatherWidget';
 import { getDateTime } from './functions/getDateTime';
 import { greeter } from './functions/greeter';
 import { getClockFontFamily, isLocalClockFont } from '../../../utility/clockFonts';
+import { clockColor } from '../../../utility/clockColors';
 
 const clockSizes: Record<string, string> = {
   small: '2.5rem',
@@ -17,7 +18,8 @@ const clockSizes: Record<string, string> = {
 };
 
 export const Header = (): JSX.Element => {
-  const { hideHeader, hideDate, showTime, largeClock, clockFont, clockSize, clockStyle, quoteStyle } = useSelector(
+  const { hideHeader, hideDate, showTime, largeClock, clockFont, clockSize, clockStyle, quoteStyle,
+    clockHoursColor, clockMinutesColor, clockSecondsColor, clockHourSeparatorColor, clockMinuteSeparatorColor } = useSelector(
     (state: State) => state.config.config
   );
 
@@ -94,6 +96,8 @@ export const Header = (): JSX.Element => {
   }, [largeClock, clockSize, clockFont, clockStyle]);
 
   const clock = now.toLocaleTimeString('en-GB', { hour12: false });
+  const clockParts = clock.split(':');
+  const clockColors = [clockHoursColor, clockHourSeparatorColor, clockMinutesColor, clockMinuteSeparatorColor, clockSecondsColor];
   const greeting = quote || greeter();
   const effectiveClockFont = clockFont === 'doto' ? 'matrix-mono-screen' : (clockFont || 'default');
   const fontFamily = getClockFontFamily(effectiveClockFont) || 'Roboto, sans-serif';
@@ -129,7 +133,9 @@ export const Header = (): JSX.Element => {
             className={largeClock ? `${classes.Clock} ${clockSize === 'auto' ? classes.ClockAuto : ''}` : quoteClass}
             style={largeClock ? clockAppearance : undefined}
           >
-            {largeClock ? clock : greeting}
+            {largeClock ? [clockParts[0], ':', clockParts[1], ':', clockParts[2]].map((part, index) => (
+              <span key={index} data-clock-color={index} style={{ color: clockColor(clockColors[index]) }}>{part}</span>
+            )) : greeting}
           </h1>
           <div className={classes.WeatherSlot} ref={weatherRef} data-testid="weather-slot">
             <WeatherWidget />

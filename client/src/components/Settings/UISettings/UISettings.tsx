@@ -15,8 +15,6 @@ import { InputGroup, Button, SettingsHeadline } from '../../UI';
 
 // Utils
 import { uiSettingsTemplate, inputHandler, applyAuth } from '../../../utility';
-import { availableClockFonts } from '../../../utility/clockFonts';
-import { QuoteSettings } from './QuoteSettings';
 
 export const UISettings = (): JSX.Element => {
   const { loading, config } = useSelector((state: State) => state.config);
@@ -26,41 +24,9 @@ export const UISettings = (): JSX.Element => {
 
   // Initial state
   const [formData, setFormData] = useState<UISettingsForm>(uiSettingsTemplate);
-  const [quotes, setQuotes] = useState('');
-  const [quotesLoaded, setQuotesLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [installedClockFonts, setInstalledClockFonts] = useState<string[]>([]);
-  const [clockFontsLoaded, setClockFontsLoaded] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    axios.get<{ data: string[] }>('/api/clock-fonts')
-      .then((response) => {
-        if (active) setInstalledClockFonts(response.data.data);
-      })
-      .catch(() => {
-        if (active) createNotification({ title: 'Error', message: 'Failed to list installed clock fonts' });
-      })
-      .finally(() => {
-        if (active) setClockFontsLoaded(true);
-      });
-    return () => { active = false; };
-  }, []);
 
-  useEffect(() => {
-    let active = true;
-    axios.get<{ data: string[] }>('/api/quotes', { headers: applyAuth() })
-      .then((response) => {
-        if (active) {
-          setQuotes(response.data.data.join('\n'));
-          setQuotesLoaded(true);
-        }
-      })
-      .catch(() => {
-        if (active) createNotification({ title: 'Error', message: 'Failed to load quotes' });
-      });
-    return () => { active = false; };
-  }, []);
 
   // Get config
   useEffect(() => {
@@ -74,13 +40,10 @@ export const UISettings = (): JSX.Element => {
   const formSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!quotesLoaded || saving) return;
+    if (saving) return;
     setSaving(true);
     try {
-      await axios.put('/api/interface', {
-        config: formData,
-        quotes: quotes.split('\n').map((text) => text.trim()).filter(Boolean),
-      }, { headers: applyAuth() });
+      await axios.put('/api/config', formData, { headers: applyAuth() });
       await getConfig();
       document.title = formData.customTitle;
       createNotification({ title: 'Success', message: 'Interface settings saved' });
@@ -104,8 +67,6 @@ export const UISettings = (): JSX.Element => {
     });
   };
 
-  const visibleClockFonts = availableClockFonts(installedClockFonts);
-  const selectedClockFontAvailable = visibleClockFonts.some((font) => font.value === formData.clockFont);
 
   return (
     <>
@@ -274,64 +235,6 @@ export const UISettings = (): JSX.Element => {
           <span>Names must be separated with semicolon</span>
         </InputGroup>
   
-        {/* === CLOCK OPTIONS === */}
-        <SettingsHeadline text="Clock" />
-        <InputGroup>
-          <label htmlFor="clockFont">Font</label>
-          <select
-            id="clockFont"
-            name="clockFont"
-            value={formData.clockFont || 'default'}
-            onChange={(e) => inputChangeHandler(e)}
-          >
-            {!selectedClockFontAvailable && formData.clockFont && (
-              <option value={formData.clockFont} disabled>
-                {formData.clockFont} (not installed)
-              </option>
-            )}
-            {visibleClockFonts.map(({ value, label }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-          <span>
-            {clockFontsLoaded
-              ? 'System and bundled fonts are always listed. Optional LCD and custom fonts appear when installed in data/clock-fonts.'
-              : 'Checking installed clock fonts...'}
-          </span>
-        </InputGroup>
-
-        <InputGroup>
-          <label htmlFor="clockSize">Size</label>
-          <select
-            id="clockSize"
-            name="clockSize"
-            value={formData.clockSize || 'auto'}
-            onChange={(e) => inputChangeHandler(e)}
-          >
-            <option value="auto">Auto (default, matches weather height)</option>
-            <option value="small">Small</option>
-            <option value="normal">Normal</option>
-            <option value="large">Large</option>
-            <option value="extra-large">Extra large</option>
-          </select>
-        </InputGroup>
-
-        <InputGroup>
-          <label htmlFor="clockStyle">Style</label>
-          <select
-            id="clockStyle"
-            name="clockStyle"
-            value={formData.clockStyle || 'bold'}
-            onChange={(e) => inputChangeHandler(e)}
-          >
-            <option value="normal">Normal</option>
-            <option value="bold">Bold (default)</option>
-            <option value="italic">Italic</option>
-            <option value="bold-italic">Bold italic</option>
-          </select>
-          <span>These settings apply to the large clock layout.</span>
-        </InputGroup>
-
         {/* === SECTIONS OPTIONS === */}
         <SettingsHeadline text="Sections" />
         {/* HIDE APPS */}
@@ -362,13 +265,8 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
-        <QuoteSettings
-          quotes={quotes}
-          onChange={setQuotes}
-          style={formData.quoteStyle || 'normal'}
-          onStyleChange={(value) => setFormData({ ...formData, quoteStyle: value })}
-        />
-        <Button disabled={!quotesLoaded || saving}>
+
+        <Button disabled={saving}>
           {saving ? 'Saving...' : 'Save changes'}
         </Button>
       </form>

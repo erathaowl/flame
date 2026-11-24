@@ -16,6 +16,16 @@
       "authRequired": true
     },
     {
+      "name": "Clock",
+      "dest": "/settings/clock",
+      "authRequired": true
+    },
+    {
+      "name": "Quotes",
+      "dest": "/settings/quotes",
+      "authRequired": true
+    },
+    {
       "name": "Weather",
       "dest": "/settings/weather",
       "authRequired": true
