@@ -34,5 +34,16 @@
   "clockFont": "default",
   "quoteStyle": "normal",
   "clockSize": "auto",
-  "clockStyle": "bold"
+  "clockStyle": "bold",
+  "quoteSource": "local",
+  "quoteEndpointUrl": "",
+  "quoteEndpointAuthMode": "none",
+  "quoteEndpointQueryName": "api_key",
+  "quoteTextPath": "$.quote",
+  "quoteAuthorPath": "$.author",
+  "clockHoursColor": "primary",
+  "clockMinutesColor": "primary",
+  "clockSecondsColor": "primary",
+  "clockHourSeparatorColor": "primary",
+  "clockMinuteSeparatorColor": "primary"
 }

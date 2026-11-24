@@ -49,6 +49,8 @@ workspace.
 | Custom ordering, invalid payloads | Yes | Yes | Application keyboard drag |
 | YAML export, import, validation, rollback | Yes | Yes | Yes |
 | Random quotes, empty/invalid lists | No | Yes | Yes |
+| Endpoint quotes, authentication, JSONPath and fallback | No | Yes | Indirect |
+| Individual clock colors | No | Indirect | Yes |
 | Gatus status colors, cache and privacy | Yes | Yes | Indirect |
 | Header layout, mobile weather, clock font selection and LCD glyphs | No | Indirect | Yes |
 | Docker/Kubernetes synchronization | Yes (mocked) | No | No |
@@ -61,8 +63,8 @@ services are needed.
 
 The Chromium test exercises login, application and bookmark forms,
 visibility actions, YAML download/upload, guest filtering, keyboard
-reordering of application rows, the single atomic interface save, all four
-quote styles, mobile clock layout and weather alignment, font selection,
+reordering of application rows, separate Clock and Quotes settings, all four
+quote styles, individual clock colors, mobile clock layout and weather alignment, font selection,
 the bundled JetBrainsMono, DSEG7 Classic and Matrix Mono Screen assets,
 and the removal of the retired Doto font.
 

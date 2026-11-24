@@ -1,9 +1,8 @@
 # Large clock fonts
 
-Under **Settings > Interface**, choose **Large clock / small quote** in
-the Header section. The dedicated **Clock** section lets you choose its
-font, size and style, using the same Save changes button as the quote
-library. The font selector discovers installed files automatically through
+Under **Settings > Clock**, choose **Large clock / small quote** as the
+header layout. This page lets you configure font, size, style and each
+clock element's color independently. The font selector discovers installed files automatically through
 `GET /api/clock-fonts`, including custom TTF, OTF, WOFF, and WOFF2 files.
 System fonts and bundled Nerd Fonts remain available at all times. Optional
 LCD fonts appear only when their files exist in `data/clock-fonts`.
@@ -69,7 +68,7 @@ Regular outline when Bold is selected, maintaining the gaps between pixels.
 
 Doto was removed from the bundled font list in v2.6.4. Instances that
 previously selected it automatically display Matrix Mono Screen; saving
-Interface settings replaces the retired selection. This does not delete
+Clock settings replaces the retired selection. This does not delete
 user-installed fonts in the persistent `data/clock-fonts` directory.
 
 ## Optional LCD fonts

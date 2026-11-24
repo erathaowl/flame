@@ -14,6 +14,8 @@ import classes from './Settings.module.css';
 import { Themer } from './Themer/Themer';
 import { WeatherSettings } from './WeatherSettings/WeatherSettings';
 import { UISettings } from './UISettings/UISettings';
+import { ClockSettings } from './ClockSettings/ClockSettings';
+import { QuotesSettings } from './QuotesSettings/QuotesSettings';
 import { AppDetails } from './AppDetails/AppDetails';
 import { StyleSettings } from './StyleSettings/StyleSettings';
 import { GeneralSettings } from './GeneralSettings/GeneralSettings';
@@ -66,6 +68,8 @@ export const Settings = (): JSX.Element => {
               component={GeneralSettings}
             />
             <ProtectedRoute path="/settings/interface" component={UISettings} />
+            <ProtectedRoute path="/settings/clock" component={ClockSettings} />
+            <ProtectedRoute path="/settings/quotes" component={QuotesSettings} />
             <ProtectedRoute
               path="/settings/docker"
               component={DockerSettings}

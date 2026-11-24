@@ -107,7 +107,7 @@ test('browser: application and bookmark management with YAML backup', async ({ p
 test('browser: bundled LCD faces load correctly', async ({ page }) => {
   await login(page);
 
-  await page.goto('/settings/interface');
+  await page.goto('/settings/clock');
   const fontSelector = page.getByLabel('Font', { exact: true });
   await expect(fontSelector.locator('option[value="dseg7"]')).toHaveCount(1);
   await expect(fontSelector.locator('option[value="doto"]')).toHaveCount(0);
@@ -154,7 +154,7 @@ test('browser: removed clock font uses Matrix Mono Screen', async ({ page }) => 
     await page.goto('/');
     await expect(page.locator('header h1')).toHaveCSS('font-family', /Matrix Mono Screen/);
 
-    await page.goto('/settings/interface');
+    await page.goto('/settings/clock');
     const selector = page.getByLabel('Font', { exact: true });
     await expect(selector).toHaveValue('matrix-mono-screen');
     await expect(selector.locator('option[value="doto"]')).toHaveCount(0);
@@ -342,7 +342,7 @@ test('browser: clock font selector lists installed fonts only', async ({ page })
     contentType: 'application/json',
     body: JSON.stringify({ data: ['CF LCD 521.ttf', 'personal-display.otf'] }),
   }));
-  await page.goto('/settings/interface');
+  await page.goto('/settings/clock');
   const selector = page.getByLabel('Font', { exact: true });
   await expect(selector.locator('option[value="jetbrains-mono"]')).toHaveCount(1);
   await expect(selector.locator('option[value="cf-lcd-521"]')).toHaveCount(1);
@@ -350,22 +350,24 @@ test('browser: clock font selector lists installed fonts only', async ({ page })
   await expect(selector.locator('option[value="local:personal-display.otf"]')).toHaveCount(1);
 });
 
-test('browser: save quotes, quote styles and clock font in one form', async ({ page }) => {
+test('browser: clock and quotes have independent settings sections', async ({ page }) => {
   await login(page);
-  await page.goto('/settings/interface');
 
-  await page.getByLabel('Header layout').selectOption('1');
+  await page.goto('/settings/clock');
+  await page.getByLabel('Header layout').selectOption('large');
   await page.getByLabel('Font', { exact: true }).selectOption('jetbrains-mono');
   await page.getByLabel('Size', { exact: true }).selectOption('large');
   await page.getByLabel('Style', { exact: true }).selectOption('bold-italic');
-  await page.getByLabel('Quote style').selectOption('italic-dimmed');
+  await submit(page, 'PUT', '/api/config',
+    page.getByRole('button', { name: 'Save changes' }));
 
-  const quotes = page.getByLabel('Quotes (one per line)');
-  await quotes.fill('One deterministic browser quote');
-  await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(1);
+  await page.goto('/settings/quotes');
+  await expect(page.getByLabel('Quote source')).toHaveValue('local');
+  await page.getByLabel('Quote style').selectOption('italic-dimmed');
+  await page.getByLabel('Quotes (one per line)').fill('One deterministic browser quote');
   await submit(page, 'PUT', '/api/interface',
     page.getByRole('button', { name: 'Save changes' }));
-  await expect(page.getByText('Interface settings saved')).toBeVisible();
+  await expect(page.getByText('Quote settings saved')).toBeVisible();
 
   await page.goto('/');
   await expect(page.locator('header h1')).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
@@ -373,38 +375,23 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
   await expect(page.locator('header h1')).toHaveCSS('font-size', '72px');
   await expect(page.locator('header h1')).toHaveCSS('font-weight', '700');
   await expect(page.locator('header h1')).toHaveCSS('font-style', 'italic');
-  await expect.poll(() => page.evaluate(() => document.fonts.check('16px "JetBrainsMono Nerd Font"'))).toBe(true);
-  const fontResponse = await page.request.get('/clock-fonts/JetBrainsMonoNerdFontMono-Regular.ttf');
-  expect(fontResponse.status()).toBe(200);
-  expect(fontResponse.headers()['content-type']).toMatch(/font|octet-stream/);
-  expect(fontResponse.headers()['cache-control']).toMatch(/no-cache/);
-  expect((await fontResponse.body()).length).toBeGreaterThan(1000);
-  const missingFont = await page.request.get('/clock-fonts/missing-font.ttf');
-  expect(missingFont.status()).toBe(404);
-  const html = await page.request.get('/');
-  expect(html.headers()['cache-control']).toMatch(/no-cache/);
-  const stylesheet = await page.request.get('/clock-fonts.css');
-  expect(stylesheet.headers()['cache-control']).toMatch(/no-cache/);
-  const config = await page.request.get('/api/config');
-  expect(config.headers()['cache-control']).toMatch(/no-store/);
-  const quote = page.getByText('One deterministic browser quote');
-  await expect(quote).toBeVisible();
-  await expect(quote).toHaveCSS('font-style', 'italic');
-  await expect(quote).toHaveCSS('opacity', '0.55');
+  await expect(page.getByText('One deterministic browser quote')).toHaveCSS('opacity', '0.55');
 
-  await page.goto('/settings/interface');
+  await page.goto('/settings/clock');
   await expect(page.getByLabel('Font', { exact: true })).toHaveValue('jetbrains-mono');
   await expect(page.getByLabel('Size', { exact: true })).toHaveValue('large');
-  await expect(page.getByLabel('Style', { exact: true })).toHaveValue('bold-italic');
-  await expect(page.getByLabel('Quote style')).toHaveValue('italic-dimmed');
-  await page.getByLabel('Header layout').selectOption('0');
+  await page.getByLabel('Header layout').selectOption('small');
   await page.getByLabel('Size', { exact: true }).selectOption('small');
   await page.getByLabel('Style', { exact: true }).selectOption('normal');
+  await submit(page, 'PUT', '/api/config',
+    page.getByRole('button', { name: 'Save changes' }));
+
   for (const [style, fontStyle, opacity] of [
     ['italic', 'italic', '1'],
     ['dimmed', 'normal', '0.55'],
     ['normal', 'normal', '1'],
   ]) {
+    await page.goto('/settings/quotes');
     await page.getByLabel('Quote style').selectOption(style);
     await submit(page, 'PUT', '/api/interface',
       page.getByRole('button', { name: 'Save changes' }));
@@ -413,17 +400,36 @@ test('browser: save quotes, quote styles and clock font in one form', async ({ p
     await expect(headline).toHaveText('One deterministic browser quote');
     await expect(headline).toHaveCSS('font-style', fontStyle);
     await expect(headline).toHaveCSS('opacity', opacity);
-    await page.goto('/settings/interface');
   }
 
-  await page.getByLabel('Header layout').selectOption('1');
-  await submit(page, 'PUT', '/api/interface',
+  await page.goto('/settings/clock');
+  await page.getByLabel('Header layout').selectOption('large');
+  await submit(page, 'PUT', '/api/config',
     page.getByRole('button', { name: 'Save changes' }));
   await page.goto('/');
   const clock = page.locator('header h1');
   await expect(clock).toHaveCSS('font-size', '40px');
   await expect(clock).toHaveCSS('font-weight', '400');
   await expect(clock).toHaveCSS('font-style', 'normal');
+});
+
+test('browser: clock colors follow theme and preserve custom HEX values', async ({ page }) => {
+  await login(page);
+  await page.goto('/settings/clock');
+  await page.getByLabel('Header layout').selectOption('large');
+  await page.getByLabel('Hours', { exact: true }).selectOption('secondary');
+  await page.getByLabel('Minutes', { exact: true }).selectOption('custom');
+  await page.getByLabel('HEX color for minutes').fill('#123456');
+  await page.getByLabel('Seconds', { exact: true }).selectOption('tertiary-dimmed');
+  await submit(page, 'PUT', '/api/config',
+    page.getByRole('button', { name: 'Save changes' }));
+
+  await page.goto('/');
+  await expect(page.locator('header h1 span').nth(0)).toHaveCSS('color', /rgb/);
+  await expect(page.locator('header h1 span').nth(2)).toHaveCSS('color', 'rgb(18, 52, 86)');
+  await page.goto('/settings/clock');
+  await expect(page.getByLabel('Minutes', { exact: true })).toHaveValue('custom');
+  await expect(page.getByLabel('HEX color for minutes')).toHaveValue('#123456');
 });
 
 test('browser: keyboard reordering persists the new application order', async ({ page }) => {

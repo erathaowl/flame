@@ -47,9 +47,9 @@ The workflow also accepts a release request committed to
 release version, and the workflow creates the normalized Git tag.
 
 ```sh
-git tag v2.6.4
-git push origin v2.6.4
-docker pull ghcr.io/erathaowl/flame:v2.6.4
+git tag v2.7.0
+git push origin v2.7.0
+docker pull ghcr.io/erathaowl/flame:v2.7.0
 ```
 
 Release notes are generated from GitHub history. Existing releases are never
@@ -73,24 +73,23 @@ other settings are outside the YAML backup.
 
 See [backup schema and examples](docs/yaml-backup.md).
 
-## Header clock and quote library
+## Header clock and quote sources
 
-Under **Settings > Interface**, choose between the default large
-greeting/quote with small date/time, or a **large clock with a small quote**
-below the search bar.
+Open **Settings > Clock** to choose the header layout, clock font, size,
+style and individual colors for hours, minutes, seconds and both separators.
+Theme-based colors (including dimmed variants) follow the active theme;
+custom HEX colors remain fixed. All elements default to the primary color.
+See [clock font setup](docs/clock-fonts.md).
 
-The quote library is also managed in **Settings > Interface**. Enter one
-quote per line and use the **single Save changes button** for both the
-interface settings and the quote library. This update is atomic in SQLite.
-Quotes are persisted in SQLite and one is chosen randomly each time the
-homepage loads. Choose the quote style (normal, italic, dimmed, or italic
-dimmed). A separate **Clock** section lets you set the font, size (small,
-normal, large, extra large, or auto), and style (normal, bold, italic, bold italic)
-for the large clock. The font selector detects optional LCD and custom font
-files installed in `data/clock-fonts`, while keeping system and bundled
-fonts available. See [clock font setup](docs/clock-fonts.md). An empty
-library falls back to the existing
-time-of-day greetings. The library does not impose a four-quote limit.
+Open **Settings > Quotes** to select the default local quote library or a
+JSON endpoint. The local library is preserved when switching sources and
+serves as a fallback if the endpoint fails. Configure the endpoint URL,
+optional Bearer or query-string authentication, and JSONPath expressions
+for the quote and author. Test the configuration before saving. Authors
+are appended in parentheses when present. An empty library falls back to
+the existing time-of-day greetings.
+
+See [quote sources and clock colors](docs/quotes-and-clock.md).
 
 ## SQLite settings storage
 
@@ -125,13 +124,13 @@ Use the fork's published multi-platform images for `linux/amd64` or
 `latest` to follow the current `master` build.
 
 ```sh
-docker pull ghcr.io/erathaowl/flame:v2.6.4
+docker pull ghcr.io/erathaowl/flame:v2.7.0
 
 docker run -d --name flame -p 5005:5005 \
   -v /path/to/data:/app/data \
   -e PASSWORD=change_me \
   --restart unless-stopped \
-  ghcr.io/erathaowl/flame:v2.6.4
+  ghcr.io/erathaowl/flame:v2.7.0
 ```
 
 Use a strong password, protect access to port 5005, and keep the persistent
@@ -162,7 +161,7 @@ the password outside the image and refer to the mounted secret file.
 ```yaml
 services:
   flame:
-    image: ghcr.io/erathaowl/flame:v2.6.4
+    image: ghcr.io/erathaowl/flame:v2.7.0
     ports:
       - "5005:5005"
     volumes:
@@ -226,6 +225,7 @@ See [test instructions and coverage matrix](docs/testing.md).
 - [YAML backup schema and restore behavior](docs/yaml-backup.md)
 - [Application status monitoring with Gatus](docs/status-monitoring.md)
 - [Large clock fonts and licensing](docs/clock-fonts.md)
+- [Quote sources and individual clock colors](docs/quotes-and-clock.md)
 - [Settings migration and upgrade/rollback](docs/upgrade.md)
 - [Tests, CI and known coverage gaps](docs/testing.md)
 

@@ -37,4 +37,15 @@ export interface Config {
   clockSize: string;
   clockStyle: string;
   quoteStyle: string;
+  quoteSource: string;
+  quoteEndpointUrl: string;
+  quoteEndpointAuthMode: string;
+  quoteEndpointQueryName: string;
+  quoteTextPath: string;
+  quoteAuthorPath: string;
+  clockHoursColor: string;
+  clockMinutesColor: string;
+  clockSecondsColor: string;
+  clockHourSeparatorColor: string;
+  clockMinuteSeparatorColor: string;
 }

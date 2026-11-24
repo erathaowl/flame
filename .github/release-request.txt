@@ -1,2 +1,2 @@
-v2.6.4
-# Remove Doto and release mobile layout, weather, and LCD font improvements.
+v2.7.0
+# Release endpoint-based quotes and individual clock colors.
