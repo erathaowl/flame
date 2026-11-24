@@ -51,6 +51,7 @@ workspace.
 | Random quotes, empty/invalid lists | No | Yes | Yes |
 | Endpoint quotes, authentication, JSONPath and fallback | No | Yes | Indirect |
 | Individual clock colors | No | Indirect | Yes |
+| Theme text inheritance across settings and main pages (light/dark) | No | No | Yes |
 | Gatus status colors, cache and privacy | Yes | Yes | Indirect |
 | Header layout, mobile weather, clock font selection and LCD glyphs | No | Indirect | Yes |
 | Docker/Kubernetes synchronization | Yes (mocked) | No | No |
