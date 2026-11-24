@@ -31,11 +31,14 @@ docker run -d --name flame -p 5005:5005 \
 ### Automated Docker builds
 
 The [Docker Build workflow](.github/workflows/docker.yml) publishes an image on
-every branch push. The `master` branch publishes `latest`; other branches use
+every branch push, except a `master` push that changes
+`.github/release-request.txt`. In that case, the Release workflow alone
+builds and publishes the versioned image and `latest`.
+The `master` branch otherwise publishes `latest`; other branches use
 a lowercase, Docker-safe version of their branch name (for example,
 `feature/login` becomes `feature-login`). In **Actions > Docker Build > Run workflow**,
 you can provide `custom_tag` to override the automatic tag. Without an override,
-the branch rules apply.
+the branch rules apply. Manual Docker builds remain available during release pushes.
 
 ### Releases
 
