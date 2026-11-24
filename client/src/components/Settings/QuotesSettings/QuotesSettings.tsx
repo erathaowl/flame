@@ -171,9 +171,9 @@ export const QuotesSettings = (): JSX.Element => {
                 value={authValue}
                 onChange={(event) => { setAuthValue(event.target.value); setSecretChanged(true); }} />
               <span>The credential is stored on the server and excluded from public configuration.</span>
-              {hasSecret && <button type="button" onClick={() => {
+              {hasSecret && <Button type="button" click={() => {
                 setAuthValue(''); setSecretChanged(true); setHasSecret(false);
-              }}>Clear saved credential</button>}
+              }}>Clear saved credential</Button>}
             </InputGroup>
           )}
           <SettingsHeadline text="JSONPath extraction" />
@@ -191,9 +191,9 @@ export const QuotesSettings = (): JSX.Element => {
             <span>Supports object properties, array indexes and [*] wildcards. Authors are appended in parentheses.</span>
           </InputGroup>
           <div style={{ marginBottom: 16 }}>
-            <button type="button" disabled={testing} onClick={test}>
+            <Button type="button" disabled={testing} click={test}>
               {testing ? 'Testing...' : 'Test endpoint'}
-            </button>
+            </Button>
           </div>
           {result && <p aria-live="polite" style={{
             marginBottom: 20, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere',
