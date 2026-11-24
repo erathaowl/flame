@@ -27,12 +27,10 @@ export const UISettings = (): JSX.Element => {
   const [saving, setSaving] = useState(false);
 
 
-
   // Get config
   useEffect(() => {
     setFormData({
       ...config,
-      clockFont: config.clockFont === 'doto' ? 'matrix-mono-screen' : config.clockFont,
     });
   }, [loading]);
 
@@ -43,7 +41,13 @@ export const UISettings = (): JSX.Element => {
     if (saving) return;
     setSaving(true);
     try {
-      await axios.put('/api/config', formData, { headers: applyAuth() });
+      const keys: (keyof UISettingsForm)[] = [
+        'customTitle', 'hideHeader', 'hideApps', 'hideCategories',
+        'useAmericanDate', 'greetingsSchema', 'daySchema', 'monthSchema',
+        'showTime', 'hideDate', 'hideSearch', 'disableAutofocus',
+      ];
+      const changes = Object.fromEntries(keys.map((key) => [key, formData[key]]));
+      await axios.put('/api/config', changes, { headers: applyAuth() });
       await getConfig();
       document.title = formData.customTitle;
       createNotification({ title: 'Success', message: 'Interface settings saved' });
@@ -66,7 +70,6 @@ export const UISettings = (): JSX.Element => {
       state: formData,
     });
   };
-
 
   return (
     <>
@@ -176,19 +179,7 @@ export const UISettings = (): JSX.Element => {
           </select>
         </InputGroup>
   
-        {/* CLOCK LAYOUT */}
-        <InputGroup>
-          <label htmlFor="largeClock">Header layout</label>
-          <select
-            id="largeClock"
-            name="largeClock"
-            value={formData.largeClock ? 1 : 0}
-            onChange={(e) => inputChangeHandler(e, { isBool: true })}
-          >
-            <option value={0}>Large greeting / small date and time</option>
-            <option value={1}>Large clock / small quote</option>
-          </select>
-        </InputGroup>
+
   
         {/* CUSTOM GREETINGS */}
         <InputGroup>
