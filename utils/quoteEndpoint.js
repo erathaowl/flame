@@ -12,7 +12,7 @@ const saveSecret = async (value, transaction) => {
     throw new Error('Invalid authentication value');
   }
   if (value) {
-    await Setting.upsert({ key: secretKey, value, valueType: 'secret' }, { transaction });
+    await Setting.upsert({ key: secretKey, value, valueType: 'string' }, { transaction });
   } else {
     await Setting.destroy({ where: { key: secretKey }, transaction });
   }
