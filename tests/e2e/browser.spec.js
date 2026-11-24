@@ -417,10 +417,10 @@ test('browser: clock colors follow theme and preserve custom HEX values', async 
   await login(page);
   await page.goto('/settings/clock');
   await page.getByLabel('Header layout').selectOption('large');
-  await page.getByLabel('Hours').selectOption('secondary');
-  await page.getByLabel('Minutes').selectOption('custom');
+  await page.getByLabel('Hours', { exact: true }).selectOption('secondary');
+  await page.getByLabel('Minutes', { exact: true }).selectOption('custom');
   await page.getByLabel('HEX color for minutes').fill('#123456');
-  await page.getByLabel('Seconds').selectOption('tertiary-dimmed');
+  await page.getByLabel('Seconds', { exact: true }).selectOption('tertiary-dimmed');
   await submit(page, 'PUT', '/api/config',
     page.getByRole('button', { name: 'Save changes' }));
 
@@ -428,7 +428,7 @@ test('browser: clock colors follow theme and preserve custom HEX values', async 
   await expect(page.locator('header h1 span').nth(0)).toHaveCSS('color', /rgb/);
   await expect(page.locator('header h1 span').nth(2)).toHaveCSS('color', 'rgb(18, 52, 86)');
   await page.goto('/settings/clock');
-  await expect(page.getByLabel('Minutes')).toHaveValue('custom');
+  await expect(page.getByLabel('Minutes', { exact: true })).toHaveValue('custom');
   await expect(page.getByLabel('HEX color for minutes')).toHaveValue('#123456');
 });
 
