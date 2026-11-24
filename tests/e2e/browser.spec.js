@@ -28,8 +28,8 @@ test('browser: text inherits active theme across settings and quote previews', a
     { value: '#263746;#185b87;#f7f3e8', primary: 'rgb(38, 55, 70)' },
   ];
 
-  const checkTextColors = async () => {
-    const unthemed = await page.evaluate(() => {
+  const checkTextColors = async (route) => {
+    await expect.poll(() => page.evaluate(() => {
       const body = document.body;
       const normalize = (name) => {
         const node = document.createElement('span');
@@ -53,8 +53,7 @@ test('browser: text inherits active theme across settings and quote previews', a
         text: (node.textContent || node.getAttribute('placeholder') || node.tagName).trim().slice(0, 80),
         color: getComputedStyle(node).color,
       }));
-    });
-    expect(unthemed).toEqual([]);
+    }), { message: 'Text colors on ' + route }).toEqual([]);
   };
 
   await page.route('**/api/quotes/test', (route) => route.fulfill({
@@ -72,6 +71,9 @@ test('browser: text inherits active theme across settings and quote previews', a
       '/settings/backup', '/settings/css', '/settings/app', '/', '/applications', '/bookmarks']) {
       await page.goto(route);
       await expect(page.locator('body')).toHaveCSS('color', theme.primary);
+      if (route.startsWith('/settings')) {
+        await expect(page.getByRole('link', { name: 'Quotes', exact: true })).toBeVisible();
+      }
       if (route === '/settings/clock') {
         await expect(page.getByText('Theme colors update automatically when you change the theme. Custom HEX colors stay fixed.'))
           .toHaveCSS('color', theme.primary);
@@ -87,11 +89,10 @@ test('browser: text inherits active theme across settings and quote previews', a
           .toHaveCSS('color', theme.primary);
       }
       if (route === '/settings/backup') {
-        const fileButtonColor = await page.locator('#backupFile').evaluate((node) =>
-          getComputedStyle(node, '::file-selector-button').color);
-        expect(fileButtonColor).toBe(theme.primary);
+        await expect.poll(() => page.locator('#backupFile').evaluate((node) =>
+          getComputedStyle(node, '::file-selector-button').color)).toBe(theme.primary);
       }
-      await checkTextColors();
+      await checkTextColors(route);
     }
   }
 });
