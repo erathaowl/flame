@@ -50,9 +50,9 @@ The workflow also accepts a release request committed to
 release version, and the workflow creates the normalized Git tag.
 
 ```sh
-git tag v2.7.0
-git push origin v2.7.0
-docker pull ghcr.io/erathaowl/flame:v2.7.0
+git tag v2.7.1
+git push origin v2.7.1
+docker pull ghcr.io/erathaowl/flame:v2.7.1
 ```
 
 Release notes are generated from GitHub history. Existing releases are never
@@ -127,13 +127,13 @@ Use the fork's published multi-platform images for `linux/amd64` or
 `latest` to follow the current `master` build.
 
 ```sh
-docker pull ghcr.io/erathaowl/flame:v2.7.0
+docker pull ghcr.io/erathaowl/flame:v2.7.1
 
 docker run -d --name flame -p 5005:5005 \
   -v /path/to/data:/app/data \
   -e PASSWORD=change_me \
   --restart unless-stopped \
-  ghcr.io/erathaowl/flame:v2.7.0
+  ghcr.io/erathaowl/flame:v2.7.1
 ```
 
 Use a strong password, protect access to port 5005, and keep the persistent
@@ -164,7 +164,7 @@ the password outside the image and refer to the mounted secret file.
 ```yaml
 services:
   flame:
-    image: ghcr.io/erathaowl/flame:v2.7.0
+    image: ghcr.io/erathaowl/flame:v2.7.1
     ports:
       - "5005:5005"
     volumes:

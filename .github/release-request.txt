@@ -1,2 +1,2 @@
-v2.7.0
-# Release endpoint-based quotes and individual clock colors.
+v2.7.1
+# Fix theme inheritance for text and native form controls.
