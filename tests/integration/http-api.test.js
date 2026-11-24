@@ -47,6 +47,18 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
 
     const checks = new Map();
     gatusServer = http.createServer((req, res) => {
+      if (req.url.startsWith('/quote-feed')) {
+        const query = new URL(req.url, 'http://localhost');
+        const authenticated = req.headers.authorization === 'Bearer test-secret' ||
+          query.searchParams.get('api_key') === 'test-secret';
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          data: authenticated
+            ? [{ text: 'Remote quote', author: 'Remote author' }]
+            : [{ text: 'Public quote', author: '' }],
+        }));
+        return;
+      }
       checks.set(req.url, (checks.get(req.url) || 0) + 1);
       const key = req.url.split('/')[4];
       const states = {
@@ -261,6 +273,49 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
       assert.deepEqual(await ok('GET', '/api/quotes'), quotes);
       await ok('PUT', '/api/quotes', { quotes: [] });
       assert.equal((await ok('GET', '/api/quotes/random', undefined, false)), null);
+    });
+
+    await t.test('quote endpoint supports alternatives, JSONPath, credentials and fallback', async () => {
+      const source = {
+        source: 'endpoint',
+        url: gatusBase + '/quote-feed',
+        authMode: 'bearer',
+        queryName: 'api_key',
+        textPath: '$.data[*].text',
+        authorPath: '$.data[*].author',
+        authValue: 'test-secret',
+      };
+      const preview = await ok('POST', '/api/quotes/test', source);
+      assert.equal(preview.quote, 'Remote quote (Remote author)');
+      assert.equal(preview.matchCount, 1);
+
+      await ok('PUT', '/api/quotes', { quotes: ['Local fallback'] });
+      await ok('PUT', '/api/quotes/source', source);
+      const publicConfig = await ok('GET', '/api/config', undefined, false);
+      assert.equal(publicConfig.quoteSource, 'endpoint');
+      assert.equal(Object.hasOwn(publicConfig, 'quoteEndpointSecret'), false);
+      assert.equal((await ok('GET', '/api/quotes/source')).hasSecret, true);
+      assert.equal(await ok('GET', '/api/quotes/random', undefined, false),
+        'Remote quote (Remote author)');
+
+      const querySource = { ...source, authMode: 'query' };
+      await ok('PUT', '/api/quotes/source', querySource);
+      assert.equal(await ok('GET', '/api/quotes/random', undefined, false),
+        'Remote quote (Remote author)');
+
+      assert.equal((await request('POST', '/api/quotes/test', {
+        ...source, textPath: '$.data[?(@.text)]',
+      }, true)).status, 400);
+      assert.equal((await request('PUT', '/api/config', {
+        quoteEndpointSecret: 'exposed',
+      }, true)).status, 400);
+
+      await ok('PUT', '/api/quotes/source', {
+        ...source, source: 'local', authValue: '',
+      });
+      assert.equal(await ok('GET', '/api/quotes/random', undefined, false), 'Local fallback');
+      assert.equal((await ok('GET', '/api/quotes/source')).hasSecret, false);
+      await ok('PUT', '/api/quotes', { quotes: [] });
     });
 
     await t.test('interface settings and quotes save together and roll back together', async () => {
