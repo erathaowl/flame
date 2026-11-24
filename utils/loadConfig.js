@@ -6,6 +6,7 @@ const loadConfig = async (transaction) => {
   const config = { ...defaults };
 
   for (const { key, value, valueType } of settings) {
+    if (key === 'quoteEndpointSecret') continue;
     if (valueType === 'boolean') config[key] = value === 'true';
     else if (valueType === 'number') config[key] = Number(value);
     else config[key] = value;
