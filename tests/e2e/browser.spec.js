@@ -20,6 +20,82 @@ const login = async (page) => {
   await expect(page.getByText(/You are logged in/)).toBeVisible();
 };
 
+test('browser: text inherits active theme across settings and quote previews', async ({ page }) => {
+  await login(page);
+
+  const themes = [
+    { value: '#effbff;#6ee2ff;#242b33', primary: 'rgb(239, 251, 255)' },
+    { value: '#263746;#185b87;#f7f3e8', primary: 'rgb(38, 55, 70)' },
+  ];
+
+  const checkTextColors = async () => {
+    const unthemed = await page.evaluate(() => {
+      const body = document.body;
+      const normalize = (name) => {
+        const node = document.createElement('span');
+        node.style.color = 'var(--color-' + name + ')';
+        body.append(node);
+        const color = getComputedStyle(node).color;
+        node.remove();
+        return color;
+      };
+      const allowed = ['primary', 'accent', 'background'].map(normalize);
+      return Array.from(body.querySelectorAll('*')).filter((node) => {
+        if (!(node instanceof HTMLElement) || !node.getClientRects().length ||
+          node.closest('[data-clock-color]')) return false;
+        const style = getComputedStyle(node);
+        if (style.visibility !== 'visible') return false;
+        const hasText = Array.from(node.childNodes).some((child) =>
+          child.nodeType === Node.TEXT_NODE && child.textContent.trim());
+        const control = node.matches('input:not([type="color"]):not([type="hidden"]), select, textarea, button');
+        return (hasText || control) && !allowed.includes(style.color);
+      }).map((node) => ({
+        text: (node.textContent || node.getAttribute('placeholder') || node.tagName).trim().slice(0, 80),
+        color: getComputedStyle(node).color,
+      }));
+    });
+    expect(unthemed).toEqual([]);
+  };
+
+  await page.route('**/api/quotes/test', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, data: {
+      quote: 'A themed quote (Author)', text: 'A themed quote', author: 'Author', matchCount: 1,
+    } }),
+  }));
+
+  for (const theme of themes) {
+    await page.evaluate((value) => localStorage.setItem('theme', value), theme.value);
+    for (const route of ['/settings', '/settings/general', '/settings/interface',
+      '/settings/clock', '/settings/quotes', '/settings/weather', '/settings/docker',
+      '/settings/backup', '/settings/css', '/settings/app', '/', '/applications', '/bookmarks']) {
+      await page.goto(route);
+      await expect(page.locator('body')).toHaveCSS('color', theme.primary);
+      if (route === '/settings/clock') {
+        await expect(page.getByText('Theme colors update automatically when you change the theme. Custom HEX colors stay fixed.'))
+          .toHaveCSS('color', theme.primary);
+      }
+      if (route === '/settings/quotes') {
+        await expect(page.getByLabel('Quote source')).toBeVisible();
+        await page.getByLabel('Quote source').selectOption('endpoint');
+        await expect(page.getByText('If the endpoint is unavailable, the local library is used as a fallback.'))
+          .toHaveCSS('color', theme.primary);
+        await page.getByLabel('Endpoint URL').fill('https://example.org/quotes');
+        await page.getByRole('button', { name: 'Test endpoint' }).click();
+        await expect(page.getByText('Found 1 quote(s). Preview: A themed quote (Author)'))
+          .toHaveCSS('color', theme.primary);
+      }
+      if (route === '/settings/backup') {
+        const fileButtonColor = await page.locator('#backupFile').evaluate((node) =>
+          getComputedStyle(node, '::file-selector-button').color);
+        expect(fileButtonColor).toBe(theme.primary);
+      }
+      await checkTextColors();
+    }
+  }
+});
+
 test('browser: empty applications can be opened', async ({ page }) => {
   await login(page);
   await page.goto('/applications');

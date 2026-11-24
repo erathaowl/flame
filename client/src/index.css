@@ -47,9 +47,19 @@ body {
   --spacing-ui: 10px;
 
   background-color: var(--color-background);
+  color: var(--color-primary);
   transition: background-color 0.3s;
   font-family: Roboto, sans-serif;
   font-size: 14px;
+}
+
+:where(button, input, select, textarea, optgroup, option) {
+  color: inherit;
+}
+
+::placeholder {
+  color: currentColor;
+  opacity: 0.65;
 }
 
 a {
