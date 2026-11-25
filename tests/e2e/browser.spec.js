@@ -567,6 +567,62 @@ test('browser: clock and quotes have independent settings sections', async ({ pa
   await expect(clock).toHaveCSS('font-style', 'normal');
 });
 
+test('browser: custom quote headers can be tested, saved, retained and removed', async ({ page }) => {
+  await login(page);
+  await page.goto('/settings/quotes');
+  await expect(page.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  await page.getByLabel('Quote source').selectOption('endpoint');
+  await page.getByLabel('Endpoint URL').fill('https://example.org/quotes');
+  await page.getByRole('button', { name: 'Add header' }).click();
+  await page.getByLabel('Header name 1').fill('X-API-Key');
+  await page.getByLabel('Header value 1').fill('browser-key');
+  await page.getByRole('button', { name: 'Add header' }).click();
+  await page.getByLabel('Header name 2').fill('Authorization');
+  await page.getByLabel('Header value 2').fill('Basic browser-secret');
+
+  const drafts = [];
+  await page.route('**/api/quotes/test', (route) => {
+    drafts.push(route.request().postDataJSON().headers);
+    return route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ data: { quote: 'Header preview', matchCount: 1 } }),
+    });
+  });
+  await page.getByRole('button', { name: 'Test endpoint' }).click();
+  await expect(page.getByText(/Preview: Header preview/)).toBeVisible();
+  expect(drafts[0]).toEqual([
+    { name: 'X-API-Key', value: 'browser-key' },
+    { name: 'Authorization', value: 'Basic browser-secret' },
+  ]);
+  try {
+    await submit(page, 'PUT', '/api/interface', page.getByRole('button', { name: 'Save changes' }));
+    await expect(page.getByText('Quote settings saved')).toBeVisible();
+    await page.reload();
+    await expect(page.getByLabel('Header name 1')).toHaveValue('X-API-Key');
+    await expect(page.getByLabel('Header name 2')).toHaveValue('Authorization');
+    await expect(page.getByLabel('Header value 1')).toHaveValue('');
+    await expect(page.getByLabel('Header value 2')).toHaveValue('');
+    await page.getByRole('button', { name: 'Test endpoint' }).click();
+    await expect(page.getByText(/Preview: Header preview/)).toBeVisible();
+    expect(drafts[1]).toEqual([{ name: 'X-API-Key' }, { name: 'Authorization' }]);
+    await page.getByRole('button', { name: 'Remove header 1' }).click();
+    await submit(page, 'PUT', '/api/interface', page.getByRole('button', { name: 'Save changes' }));
+    await expect(page.getByText('Quote settings saved')).toBeVisible();
+    await page.reload();
+    await expect(page.getByLabel('Header name 1')).toHaveValue('Authorization');
+    await expect(page.getByLabel('Header name 2')).toHaveCount(0);
+  } finally {
+    const token = await page.evaluate(() => localStorage.getItem('token'));
+    await page.request.put('/api/quotes/source', {
+      headers: { 'Authorization-Flame': `Bearer ${token}` },
+      data: {
+        source: 'local', url: '', authMode: 'none', queryName: 'api_key',
+        textPath: '$.quote', authorPath: '$.author', authValue: '', headers: [],
+      },
+    });
+  }
+});
+
 test('browser: clock colors follow theme and preserve custom HEX values', async ({ page }) => {
   await login(page);
   await page.goto('/settings/clock');

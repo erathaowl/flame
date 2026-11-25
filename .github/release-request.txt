@@ -1,2 +1,2 @@
-v2.7.3
-# Prevent Applications crashes caused by empty or malformed icon names.
+v2.7.4
+# Support multiple custom HTTP headers for quote endpoints.

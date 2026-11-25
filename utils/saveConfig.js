@@ -10,7 +10,7 @@ const saveConfig = async (changes, transaction) => {
 
   const rows = Object.entries(changes).map(([key, value]) => {
     const valueType = typeof value;
-    if (key === 'quoteEndpointSecret' ||
+    if (['quoteEndpointSecret', 'quoteEndpointHeaders'].includes(key) ||
         !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key) ||
         !['string', 'number', 'boolean'].includes(valueType) ||
         (valueType === 'number' && !Number.isFinite(value)) ||

@@ -1,8 +1,74 @@
 const axios = require('axios');
+const { validateHeaderName, validateHeaderValue } = require('node:http');
 const Setting = require('../models/Setting');
 const loadConfig = require('./loadConfig');
 
 const secretKey = 'quoteEndpointSecret';
+const headersKey = 'quoteEndpointHeaders';
+
+const readHeaders = async () => {
+  const row = await Setting.findByPk(headersKey);
+  return row ? JSON.parse(row.value) : [];
+};
+
+// Reserve transport headers and keys used internally by Axios 0.x.
+const reservedHeaders = new Set([
+  'host', 'connection', 'content-length', 'transfer-encoding', 'upgrade',
+  'expect', 'te', 'trailer', 'keep-alive', 'proxy-connection', 'proxy-authorization',
+  'common', 'get', 'post', 'put', 'patch', 'delete', 'head', 'options',
+  '__proto__', 'constructor', 'prototype',
+]);
+
+const resolveHeaders = (draft, saved = []) => {
+  if (draft === undefined) return saved;
+  if (!Array.isArray(draft) || draft.length > 32) {
+    throw new Error('Invalid custom headers (maximum 32)');
+  }
+
+  const seen = new Set();
+  const headers = draft.map((header) => {
+    if (!header || typeof header.name !== 'string') {
+      throw new Error('Invalid custom header name');
+    }
+    const name = header.name.trim();
+    const key = name.toLowerCase();
+    if (!name || name.length > 128 || reservedHeaders.has(key) || seen.has(key)) {
+      throw new Error('Invalid, reserved or duplicate custom header name');
+    }
+    try {
+      validateHeaderName(name);
+    } catch {
+      throw new Error('Invalid custom header name');
+    }
+    seen.add(key);
+    const value = header.value === undefined
+      ? saved.find((item) => item.name.toLowerCase() === key)?.value
+      : header.value;
+    if (typeof value !== 'string' || value.length > 2048) {
+      throw new Error('Invalid or missing custom header value');
+    }
+    try {
+      validateHeaderValue(name, value);
+    } catch {
+      throw new Error('Invalid custom header value');
+    }
+    return { name, value };
+  });
+  if (headers.reduce((size, { name, value }) => size + name.length + value.length + 4, 0) > 8192) {
+    throw new Error('Invalid custom headers (maximum total size 8192 characters)');
+  }
+  return headers;
+};
+
+const saveHeaders = async (headers, transaction) => {
+  if (headers.length) {
+    await Setting.upsert({
+      key: headersKey, value: JSON.stringify(headers), valueType: 'string',
+    }, { transaction });
+  } else {
+    await Setting.destroy({ where: { key: headersKey }, transaction });
+  }
+};
 
 const readSecret = async () => (await Setting.findByPk(secretKey))?.value || '';
 
@@ -70,11 +136,15 @@ const validateSource = (source) => {
   return parsed;
 };
 
-const fetchQuote = async (source, secret) => {
+const fetchQuote = async (source, secret, customHeaders = []) => {
   const parsed = validateSource(source);
   const headers = { Accept: 'application/json' };
   if (source.authMode === 'query' && secret) parsed.searchParams.set(source.queryName, secret);
   if (source.authMode === 'bearer' && secret) headers.Authorization = `Bearer ${secret}`;
+  for (const { name, value } of customHeaders) {
+    const key = Object.keys(headers).find((existing) => existing.toLowerCase() === name.toLowerCase()) || name.toLowerCase();
+    headers[key] = value;
+  }
   const response = await axios.get(parsed.toString(), {
     headers, timeout: 5000, maxRedirects: 0, maxContentLength: 262144,
     responseType: 'json', transitional: { silentJSONParsing: false },
@@ -94,4 +164,4 @@ const currentSource = async () => {
   };
 };
 
-module.exports = { readSecret, saveSecret, validateSource, fetchQuote, currentSource, extractQuote, selectPath };
+module.exports = { readSecret, saveSecret, readHeaders, resolveHeaders, saveHeaders, validateSource, fetchQuote, currentSource, extractQuote, selectPath };

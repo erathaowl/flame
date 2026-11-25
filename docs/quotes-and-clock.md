@@ -7,7 +7,22 @@ Open **Settings → Quotes** to choose between two independent sources.
 
 ## JSON endpoint configuration
 
-Enter an HTTP(S) URL and optionally select Bearer authentication or a query-string token. Query-string authentication requires the parameter name (for example `api_key`). Credentials are stored in the server's settings database and are never returned by the public configuration endpoint. If a credential is already stored, leave the password input blank to keep it.
+Enter an HTTP(S) URL. The existing None, Bearer token and query-string authentication options remain available. Query-string authentication requires a parameter name (for example `api_key`).
+
+Under **Custom HTTP headers**, use **Add header** to enter as many name/value pairs as needed. For example:
+
+| Header name | Header value |
+| --- | --- |
+| `Authorization` | `Basic <base64-credentials>` |
+| `X-API-Key` | `your-api-key` |
+| `X-Tenant-ID` | `example-tenant` |
+| `Accept` | `application/json` |
+
+Select **None** for authentication if using only custom headers. A custom Authorization header overrides the Bearer option; headers can also be combined with query-string authentication. Existing Bearer and query-string configurations continue to work.
+
+All header values are treated as credentials, stored in the server's SQLite settings database and masked in the UI. Only saved names are returned to authenticated clients; values are excluded from public configuration and YAML backups. They are not encrypted at rest, so protect the persistent data volume. Leave a saved value untouched to retain it, enter a replacement to update it, or remove its row and save to delete it. Use HTTPS for endpoints carrying credentials.
+
+Header names are case-insensitive and must be valid HTTP tokens. Duplicate names and reserved transport headers (such as Host, Connection and Content-Length) are rejected, as are invalid control characters and internal Axios keys. Up to 32 headers are supported, with names up to 128 characters, values up to 2048 characters, and a total limit of 8192 characters.
 
 The endpoint must respond with JSON. Supply paths for the quote text and the optional author. The application supports JSONPath property access, numeric indexes and wildcards, including:
 
@@ -27,11 +42,30 @@ The endpoint is fetched by Flame's server, so it must be reachable from the serv
 
 - `GET /api/quotes/random` returns a random quote from the selected source; it falls back to the local library when the endpoint is unavailable.
 - `GET /api/quotes` and `PUT /api/quotes` continue to manage the local library.
-- `GET /api/quotes/source` reports whether an authentication secret is stored (authenticated).
+- `GET /api/quotes/source` reports `hasSecret` and `headerNames` (authenticated); it never returns credential values.
 - `PUT /api/quotes/source` stores the source choice and endpoint settings (authenticated).
 - `POST /api/quotes/test` tests a draft endpoint configuration (authenticated).
 
-The fields `source`, `url`, `authMode`, `queryName`, `textPath`, and `authorPath` are accepted by the source and test routes. The optional `authValue` replaces the stored secret when saving. Omitting it keeps the existing secret; passing an empty string clears the secret. The test route returns `quote`, `text`, `author` and `matchCount`.
+The fields `source`, `url`, `authMode`, `queryName`, `textPath`, and `authorPath` are accepted by the source and test routes. The optional `authValue` replaces the legacy stored secret when saving. Omitting it keeps that secret; passing an empty string clears it.
+
+The optional `headers` array contains objects with `name` and `value` properties. For example:
+
+```json
+{
+  "source": "endpoint",
+  "url": "https://example.org/api/quotes",
+  "authMode": "none",
+  "queryName": "api_key",
+  "textPath": "$.quote",
+  "authorPath": "$.author",
+  "headers": [
+    {"name": "X-API-Key", "value": "your-api-key"},
+    {"name": "X-Tenant-ID", "value": "example-tenant"}
+  ]
+}
+```
+
+Omitting `headers` preserves the saved list. Providing an array replaces it when saving; omit an individual `value` to reuse the stored value for that name (case-insensitive). An empty array clears all headers. The test route uses the same resolution rules but does not save changes. It returns `quote`, `text`, `author` and `matchCount`.
 
 ## Clock element colors
 
