@@ -17,7 +17,7 @@ export const AppCard = ({ app, status }: Props): JSX.Element => {
   const [displayUrl, redirectUrl] = urlParser(app.url);
 
   let iconEl: JSX.Element;
-  const { icon } = app;
+  const icon = typeof app.icon === 'string' ? app.icon.trim() : '';
 
   if (isImage(icon)) {
     const source = isUrl(icon) ? icon : `/uploads/${icon}`;

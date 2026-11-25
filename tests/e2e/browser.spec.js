@@ -141,6 +141,50 @@ test('browser: malformed applications response is recoverable', async ({ page })
   expect(errors).toEqual([]);
 });
 
+test('browser: unpinned applications with malformed icons remain visible', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const icons = ['', '---', 'alert--box-outline', '-server-', '   ', null, undefined, 'server'];
+
+  await page.route('**/api/apps', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      success: true,
+      data: icons.map((icon, index) => ({
+        id: index + 1,
+        name: 'Icon regression ' + index,
+        url: 'https://example.com/app-' + index,
+        icon,
+        description: '',
+        statusEndpoint: '',
+        isPinned: false,
+        isPublic: true,
+        orderId: index + 1,
+      })),
+    }),
+  }));
+
+  await login(page);
+  await page.goto('/');
+  await expect(page.getByText(/There are no pinned applications/)).toBeVisible();
+  await page.getByRole('link', { name: 'Applications', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
+
+  for (let index = 0; index < icons.length; index++) {
+    const card = page.getByRole('link', { name: new RegExp('Icon regression ' + index) });
+    await expect(card).toBeVisible();
+    await expect(card.locator('svg path')).toHaveCount(1);
+  }
+
+  await page.getByText('Edit', { exact: true }).click();
+  await expect(page.getByRole('cell', { name: 'Icon regression 0', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
+  await expect(page.getByText('Icon regression 0', { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test('browser: application and bookmark management with YAML backup', async ({ page, browser }) => {
   await login(page);
 
