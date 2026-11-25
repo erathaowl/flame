@@ -1,2 +1,2 @@
-v2.7.1
-# Fix theme inheritance for text and native form controls.
+v2.7.2
+# Fix empty applications navigation and recover from invalid API responses.

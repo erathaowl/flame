@@ -1,6 +1,6 @@
 services:
   flame:
-    image: ghcr.io/erathaowl/flame:v2.7.1
+    image: ghcr.io/erathaowl/flame:v2.7.2
     container_name: flame
     restart: unless-stopped
     ports:

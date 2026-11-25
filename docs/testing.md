@@ -45,6 +45,7 @@ workspace.
 | Startup, migrations, typed settings | Yes | Yes | Indirect |
 | Authentication and public/private access | Yes | Yes | Yes |
 | Application create, edit, visibility and delete | Yes | Yes | Yes |
+| Empty application list, navigation and invalid-response recovery | No | Indirect | Yes |
 | Category and bookmark management | Yes | Yes | Yes |
 | Custom ordering, invalid payloads | Yes | Yes | Application keyboard drag |
 | YAML export, import, validation, rollback | Yes | Yes | Yes |
