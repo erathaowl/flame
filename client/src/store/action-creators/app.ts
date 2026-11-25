@@ -27,6 +27,10 @@ export const getApps =
         headers: applyAuth(),
       });
 
+      if (!Array.isArray(res.data?.data)) {
+        throw new Error('Invalid applications response');
+      }
+
       dispatch({
         type: ActionType.getAppsSuccess,
         payload: res.data.data,

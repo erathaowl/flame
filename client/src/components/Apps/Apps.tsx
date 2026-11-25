@@ -57,6 +57,10 @@ export const Apps = (props: Props): JSX.Element => {
     }
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    if (!apps.length) setShowTable(false);
+  }, [apps.length]);
+
   // Form actions
   const toggleModal = (): void => {
     setModalIsOpen(!modalIsOpen);
@@ -73,9 +77,11 @@ export const Apps = (props: Props): JSX.Element => {
 
   return (
     <Container>
-      <Modal isOpen={modalIsOpen} setIsOpen={setModalIsOpen}>
-        <AppForm modalHandler={toggleModal} />
-      </Modal>
+      {isAuthenticated && modalIsOpen && (
+        <Modal isOpen={modalIsOpen} setIsOpen={setModalIsOpen}>
+          <AppForm modalHandler={toggleModal} />
+        </Modal>
+      )}
 
       <Headline
         title="All Applications"
@@ -92,7 +98,9 @@ export const Apps = (props: Props): JSX.Element => {
               toggleModal();
             }}
           />
-          <ActionButton name="Edit" icon="mdiPencil" handler={toggleEdit} />
+          {apps.length > 0 && (
+            <ActionButton name="Edit" icon="mdiPencil" handler={toggleEdit} />
+          )}
         </div>
       )}
 

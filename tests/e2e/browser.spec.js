@@ -97,15 +97,48 @@ test('browser: text inherits active theme across settings and quote previews', a
   }
 });
 
-test('browser: empty applications can be opened', async ({ page }) => {
+test('browser: empty applications can be opened from home and directly', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
   await login(page);
-  await page.goto('/applications');
+  await page.goto('/');
+  await expect(page.getByText(/You don't have any applications/)).toBeVisible();
+  await page.getByRole('link', { name: 'Applications', exact: true }).click();
+  await expect(page).toHaveURL(/\/applications$/);
   await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
-  await expect(page.getByText('No applications yet.')).toBeVisible();
+  await expect(page.getByText(/No applications yet\./)).toBeVisible();
+  await expect(page.getByText('Edit', { exact: true })).toHaveCount(0);
   await page.getByText('Add', { exact: true }).click();
   await expect(page.getByLabel('App name')).toBeVisible();
   await page.goto('/applications');
-  await expect(page.getByText('No applications yet.')).toBeVisible();
+  await expect(page.getByText(/No applications yet\./)).toBeVisible();
+  await page.getByRole('link', { name: 'Go back' }).click();
+  await expect(page.getByRole('heading', { name: 'Applications', exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('browser: guest can open an empty applications page', async ({ page }) => {
+  await page.goto('/applications');
+  await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
+  await expect(page.getByText(/Sign in to create your first application/)).toBeVisible();
+  await expect(page.getByText('Add', { exact: true })).toHaveCount(0);
+});
+
+test('browser: malformed applications response is recoverable', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route('**/api/apps', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ success: true, data: {} }),
+  }));
+  await page.goto('/applications');
+  await expect(page.getByRole('heading', { name: 'All Applications' })).toBeVisible();
+  await expect(page.getByText(/Failed to load applications/)).toBeVisible();
+  await page.unroute('**/api/apps');
+  await page.getByRole('button', { name: 'Retry' }).click();
+  await expect(page.getByText(/No applications yet\./)).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
 test('browser: application and bookmark management with YAML backup', async ({ page, browser }) => {
