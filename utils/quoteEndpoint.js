@@ -155,8 +155,8 @@ const fetchQuote = async (source, secret, customHeaders = []) => {
   return extractQuote(response.data, source.textPath, source.authorPath);
 };
 
-const currentSource = async () => {
-  const config = await loadConfig();
+const currentSource = async (config) => {
+  config = config || await loadConfig();
   return {
     url: config.quoteEndpointUrl, authMode: config.quoteEndpointAuthMode,
     queryName: config.quoteEndpointQueryName, textPath: config.quoteTextPath,

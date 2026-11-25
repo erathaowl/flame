@@ -46,7 +46,14 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
     const baseUrl = await serve(apiServer);
 
     const checks = new Map();
+    let quoteCacheCalls = 0;
     gatusServer = http.createServer((req, res) => {
+      if (req.url.startsWith('/cached-quote-feed')) {
+        quoteCacheCalls++;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ quote: 'Cached quote ' + quoteCacheCalls }));
+        return;
+      }
       if (req.url.startsWith('/quote-feed')) {
         const query = new URL(req.url, 'http://localhost');
         const authenticated = req.url.startsWith('/quote-feed-headers')
@@ -388,6 +395,42 @@ test('HTTP API: authentication, management, monitoring, backup and rollback', as
       assert.equal(await ok('GET', '/api/quotes/random', undefined, false), 'Public quote');
       await ok('PUT', '/api/quotes/source', { ...source, source: 'local', headers: [] });
       assert.deepEqual((await ok('GET', '/api/quotes/source')).headerNames, []);
+    });
+
+    await t.test('quote refresh interval shares cached quotes across requests and bypasses cache for previews', async () => {
+      const source = {
+        source: 'endpoint', url: gatusBase + '/cached-quote-feed',
+        authMode: 'none', queryName: 'api_key', textPath: '$.quote',
+        authorPath: '', refreshInterval: 60, headers: [],
+      };
+      const random = () => ok('GET', '/api/quotes/random', undefined, false);
+      await ok('PUT', '/api/quotes/source', source);
+      assert.equal((await ok('GET', '/api/config', undefined, false)).quoteEndpointRefreshInterval, 60);
+      assert.deepEqual(await Promise.all([random(), random(), random()]), [
+        'Cached quote 1', 'Cached quote 1', 'Cached quote 1',
+      ]);
+      assert.equal(quoteCacheCalls, 1);
+      assert.equal((await ok('POST', '/api/quotes/test', source)).quote, 'Cached quote 2');
+      assert.equal(await random(), 'Cached quote 1');
+      assert.equal(quoteCacheCalls, 2);
+      const { refreshInterval, ...legacySource } = source;
+      await ok('PUT', '/api/quotes/source', legacySource);
+      assert.equal(await random(), 'Cached quote 1');
+
+      for (const invalid of [-1, 1, 86401, '60', null]) {
+        for (const [method, path] of [['POST', '/api/quotes/test'], ['PUT', '/api/quotes/source']]) {
+          assert.equal((await request(method, path, { ...source, refreshInterval: invalid }, true)).status, 400);
+        }
+        assert.equal((await request('PUT', '/api/config', {
+          quoteEndpointRefreshInterval: invalid,
+        }, true)).status, 400);
+      }
+      await ok('PUT', '/api/quotes/source', { ...source, headers: [{ name: 'X-Test', value: 'new' }] });
+      assert.equal(await random(), 'Cached quote 3');
+      await ok('PUT', '/api/quotes/source', { ...source, refreshInterval: 0 });
+      assert.equal(await random(), 'Cached quote 4');
+      assert.equal(await random(), 'Cached quote 5');
+      await ok('PUT', '/api/quotes/source', { ...source, source: 'local', refreshInterval: 0 });
     });
 
     await t.test('interface settings and quotes save together and roll back together', async () => {

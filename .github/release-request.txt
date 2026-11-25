@@ -1,2 +1,2 @@
 v2.7.4
-# Support multiple custom HTTP headers for quote endpoints.
+# Support multiple custom HTTP headers and a minimum refresh interval for quote endpoints.

@@ -12,6 +12,7 @@ type Source = {
   url: string;
   authMode: string;
   queryName: string;
+  refreshInterval: number;
   textPath: string;
   authorPath: string;
 };
@@ -21,7 +22,7 @@ type SourceStatus = { hasSecret: boolean; headerNames: string[] };
 
 const initialSource: Source = {
   source: 'local', url: '', authMode: 'none', queryName: 'api_key',
-  textPath: '$.quote', authorPath: '$.author',
+  textPath: '$.quote', authorPath: '$.author', refreshInterval: 0,
 };
 
 export const QuotesSettings = (): JSX.Element => {
@@ -46,6 +47,7 @@ export const QuotesSettings = (): JSX.Element => {
       url: config.quoteEndpointUrl || '',
       authMode: config.quoteEndpointAuthMode || 'none',
       queryName: config.quoteEndpointQueryName || 'api_key',
+      refreshInterval: config.quoteEndpointRefreshInterval ?? 0,
       textPath: config.quoteTextPath || '$.quote',
       authorPath: config.quoteAuthorPath || '',
     });
@@ -68,7 +70,7 @@ export const QuotesSettings = (): JSX.Element => {
     return () => { active = false; };
   }, []);
 
-  const change = (key: keyof Source, value: string) =>
+  const change = (key: Exclude<keyof Source, 'refreshInterval'>, value: string) =>
     setSource((current) => ({ ...current, [key]: value }));
 
   const updateHeader = (index: number, change: Partial<CustomHeader>) =>
@@ -162,6 +164,27 @@ export const QuotesSettings = (): JSX.Element => {
             <input id="quoteEndpointUrl" type="url" required value={source.url}
               placeholder="https://example.org/api/quotes"
               onChange={(event) => change('url', event.target.value)} />
+          </InputGroup>
+          <InputGroup>
+            <label htmlFor="quoteRefreshInterval">Minimum refresh interval</label>
+            <select id="quoteRefreshInterval" value={source.refreshInterval}
+              onChange={(event) => setSource((current) => ({
+                ...current, refreshInterval: Number(event.target.value),
+              }))}>
+              <option value={0}>None</option>
+              <option value={60}>1 min</option>
+              <option value={300}>5 min</option>
+              <option value={600}>10 min</option>
+              <option value={900}>15 min</option>
+              <option value={1800}>30 min</option>
+              <option value={3600}>1 h</option>
+              <option value={7200}>2 h</option>
+              <option value={14400}>4 h</option>
+              <option value={21600}>6 h</option>
+              <option value={43200}>12 h</option>
+              <option value={86400}>24 h</option>
+            </select>
+            <span>Reuse the last quote for this interval across all clients. Test endpoint always makes a new request.</span>
           </InputGroup>
           <InputGroup>
             <label htmlFor="quoteAuthMode">Authentication</label>

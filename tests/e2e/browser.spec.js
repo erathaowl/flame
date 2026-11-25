@@ -573,6 +573,8 @@ test('browser: custom quote headers can be tested, saved, retained and removed',
   await expect(page.getByRole('button', { name: 'Save changes' })).toBeEnabled();
   await page.getByLabel('Quote source').selectOption('endpoint');
   await page.getByLabel('Endpoint URL').fill('https://example.org/quotes');
+  await expect(page.getByLabel('Minimum refresh interval')).toHaveValue('0');
+  await page.getByLabel('Minimum refresh interval').selectOption('86400');
   await page.getByRole('button', { name: 'Add header' }).click();
   await page.getByLabel('Header name 1').fill('X-API-Key');
   await page.getByLabel('Header value 1').fill('browser-key');
@@ -598,6 +600,7 @@ test('browser: custom quote headers can be tested, saved, retained and removed',
     await submit(page, 'PUT', '/api/interface', page.getByRole('button', { name: 'Save changes' }));
     await expect(page.getByText('Quote settings saved')).toBeVisible();
     await page.reload();
+    await expect(page.getByLabel('Minimum refresh interval')).toHaveValue('86400');
     await expect(page.getByLabel('Header name 1')).toHaveValue('X-API-Key');
     await expect(page.getByLabel('Header name 2')).toHaveValue('Authorization');
     await expect(page.getByLabel('Header value 1')).toHaveValue('');
@@ -617,7 +620,7 @@ test('browser: custom quote headers can be tested, saved, retained and removed',
       headers: { 'Authorization-Flame': `Bearer ${token}` },
       data: {
         source: 'local', url: '', authMode: 'none', queryName: 'api_key',
-        textPath: '$.quote', authorPath: '$.author', authValue: '', headers: [],
+        textPath: '$.quote', authorPath: '$.author', authValue: '', headers: [], refreshInterval: 0,
       },
     });
   }

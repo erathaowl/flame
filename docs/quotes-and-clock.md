@@ -38,15 +38,31 @@ Use **Test endpoint** to fetch and preview a quote without saving. This test act
 
 The endpoint is fetched by Flame's server, so it must be reachable from the server/container, not only from the user's browser. Keep an endpoint key out of the URL if using the dedicated authentication field.
 
+## Minimum refresh interval
+
+Choose **None** (default) to request a new quote on every homepage load, or select
+1, 5, 10, 15 or 30 minutes, or 1, 2, 4, 6, 12 or 24 hours. The server keeps
+the last extracted quote in memory and shares it across all clients.
+Concurrent requests share one outbound fetch. When the interval expires, the
+next homepage request fetches a new quote; there is no background polling.
+
+If a refresh fails, the last successful quote is retained and another attempt
+is made only after the interval. If there is no cached quote, the local library
+is used. Changing endpoint settings (including headers or the interval) or
+restarting Flame invalidates the in-memory cache. **Test endpoint** always
+makes a real request without replacing the homepage cache.
+
 ## API
 
-- `GET /api/quotes/random` returns a random quote from the selected source; it falls back to the local library when the endpoint is unavailable.
+- `GET /api/quotes/random` returns a random quote from the selected source; it uses the configured cache interval and falls back to the last successful quote or the local library when the endpoint is unavailable.
 - `GET /api/quotes` and `PUT /api/quotes` continue to manage the local library.
 - `GET /api/quotes/source` reports `hasSecret` and `headerNames` (authenticated); it never returns credential values.
 - `PUT /api/quotes/source` stores the source choice and endpoint settings (authenticated).
 - `POST /api/quotes/test` tests a draft endpoint configuration (authenticated).
 
 The fields `source`, `url`, `authMode`, `queryName`, `textPath`, and `authorPath` are accepted by the source and test routes. The optional `authValue` replaces the legacy stored secret when saving. Omitting it keeps that secret; passing an empty string clears it.
+
+The optional numeric `refreshInterval` is in seconds: `0`, `60`, `300`, `600`, `900`, `1800`, `3600`, `7200`, `14400`, `21600`, `43200`, or `86400`. Omission preserves the saved interval; zero disables caching.
 
 The optional `headers` array contains objects with `name` and `value` properties. For example:
 
@@ -58,6 +74,7 @@ The optional `headers` array contains objects with `name` and `value` properties
   "queryName": "api_key",
   "textPath": "$.quote",
   "authorPath": "$.author",
+  "refreshInterval": 3600,
   "headers": [
     {"name": "X-API-Key", "value": "your-api-key"},
     {"name": "X-Tenant-ID", "value": "example-tenant"}

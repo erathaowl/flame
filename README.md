@@ -87,7 +87,8 @@ See [clock font setup](docs/clock-fonts.md).
 Open **Settings > Quotes** to select the default local quote library or a
 JSON endpoint. The local library is preserved when switching sources and
 serves as a fallback if the endpoint fails. Configure the endpoint URL,
-optional Bearer or query-string authentication, custom HTTP headers, and JSONPath expressions
+optional Bearer or query-string authentication, custom HTTP headers, an optional refresh interval (1 minute to 24 hours),
+and JSONPath expressions
 for the quote and author. Test the configuration before saving. Authors
 are appended in parentheses when present. An empty library falls back to
 the existing time-of-day greetings.

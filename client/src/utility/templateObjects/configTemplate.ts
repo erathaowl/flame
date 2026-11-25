@@ -42,6 +42,7 @@ export const configTemplate: Config = {
   quoteEndpointUrl: '',
   quoteEndpointAuthMode: 'none',
   quoteEndpointQueryName: 'api_key',
+  quoteEndpointRefreshInterval: 0,
   quoteTextPath: '$.quote',
   quoteAuthorPath: '$.author',
   clockHoursColor: 'primary',
