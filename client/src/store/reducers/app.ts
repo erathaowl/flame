@@ -34,6 +34,7 @@ export const appsReducer = (
       return {
         ...state,
         loading: false,
+        errors: undefined,
         apps: action.payload || [],
       };
     }
