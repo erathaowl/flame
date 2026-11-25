@@ -50,6 +50,7 @@ const createStore = () => {
     '../models/Setting': Setting,
     './init/initialConfig.json': defaults,
     './ErrorResponse': ErrorResponse,
+    './quoteCache': require('../utils/quoteCache'),
   });
   return { sequelize, getConfig, saveConfig };
 };
@@ -76,6 +77,15 @@ test('settings: invalid input does not persist partial updates', async () => {
     /Invalid configuration value for lat/
   );
   assert.equal((await getConfig()).hideHeader, false);
+});
+
+test('settings: quote refresh interval is typed and validated', async () => {
+  const { getConfig, saveConfig } = createStore();
+  assert.equal((await getConfig()).quoteEndpointRefreshInterval, 0);
+  await saveConfig({ quoteEndpointRefreshInterval: 3600 });
+  assert.equal((await getConfig()).quoteEndpointRefreshInterval, 3600);
+  await assert.rejects(saveConfig({ quoteEndpointRefreshInterval: 1 }), /Invalid configuration value/);
+  assert.equal((await getConfig()).quoteEndpointRefreshInterval, 3600);
 });
 
 test('settings: a failed transaction rolls back all values', async () => {

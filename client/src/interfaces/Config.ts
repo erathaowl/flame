@@ -41,6 +41,7 @@ export interface Config {
   quoteEndpointUrl: string;
   quoteEndpointAuthMode: string;
   quoteEndpointQueryName: string;
+  quoteEndpointRefreshInterval: number;
   quoteTextPath: string;
   quoteAuthorPath: string;
   clockHoursColor: string;

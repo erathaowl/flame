@@ -52,6 +52,8 @@ workspace.
 | YAML export, import, validation, rollback | Yes | Yes | Yes |
 | Random quotes, empty/invalid lists | No | Yes | Yes |
 | Endpoint quotes, authentication, JSONPath and fallback | No | Yes | Indirect |
+| Custom quote headers, credential privacy, validation and editing | No | Yes | Yes |
+| Quote refresh interval, shared cache, expiration and failure handling | Yes | Yes | Yes |
 | Individual clock colors | No | Indirect | Yes |
 | Theme text inheritance across settings and main pages (light/dark) | No | No | Yes |
 | Gatus status colors, cache and privacy | Yes | Yes | Indirect |

@@ -2,6 +2,7 @@ const { sequelize } = require('../db');
 const Setting = require('../models/Setting');
 const defaults = require('./init/initialConfig.json');
 const ErrorResponse = require('./ErrorResponse');
+const { validRefreshInterval } = require('./quoteCache');
 
 const saveConfig = async (changes, transaction) => {
   if (!changes || typeof changes !== 'object' || Array.isArray(changes)) {
@@ -10,7 +11,8 @@ const saveConfig = async (changes, transaction) => {
 
   const rows = Object.entries(changes).map(([key, value]) => {
     const valueType = typeof value;
-    if (key === 'quoteEndpointSecret' ||
+    if (['quoteEndpointSecret', 'quoteEndpointHeaders'].includes(key) ||
+        (key === 'quoteEndpointRefreshInterval' && !validRefreshInterval(value)) ||
         !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key) ||
         !['string', 'number', 'boolean'].includes(valueType) ||
         (valueType === 'number' && !Number.isFinite(value)) ||

@@ -2,11 +2,19 @@ const express = require('express');
 const { auth, requireAuth, asyncWrapper } = require('../middleware');
 const { sequelize } = require('../db');
 const Quote = require('../models/Quote');
-const Setting = require('../models/Setting');
 const validateQuotes = require('../utils/validateQuotes');
+const { validRefreshInterval, cachedQuote, clearQuoteCache } = require('../utils/quoteCache');
 const loadConfig = require('../utils/loadConfig');
 const saveConfig = require('../utils/saveConfig');
-const { readSecret, saveSecret, validateSource, fetchQuote, currentSource } = require('../utils/quoteEndpoint');
+const {
+  readSecret, saveSecret, readHeaders, resolveHeaders, saveHeaders,
+  validateSource, fetchQuote, currentSource,
+} = require('../utils/quoteEndpoint');
+
+const sourceStatus = async () => ({
+  hasSecret: Boolean(await readSecret()),
+  headerNames: (await readHeaders()).map(({ name }) => name),
+});
 
 const router = express.Router();
 
@@ -15,10 +23,19 @@ router.get('/random', asyncWrapper(async (req, res) => {
   let quote = null;
   if (config.quoteSource === 'endpoint' && config.quoteEndpointUrl) {
     try {
-      quote = (await fetchQuote(await currentSource(), await readSecret())).quote;
+      const source = await currentSource(config);
+      const secret = await readSecret();
+      const headers = await readHeaders();
+      quote = await cachedQuote(
+        JSON.stringify([source, secret, headers]),
+        config.quoteEndpointRefreshInterval,
+        async () => (await fetchQuote(source, secret, headers)).quote
+      );
     } catch (error) {
       // Preserve the local library as a fallback if the endpoint is unavailable.
     }
+  } else {
+    clearQuoteCache();
   }
   if (quote === null) {
     const count = await Quote.count();
@@ -30,14 +47,18 @@ router.get('/random', asyncWrapper(async (req, res) => {
 }));
 
 router.get('/source', auth, requireAuth, asyncWrapper(async (req, res) => {
-  res.json({ success: true, data: { hasSecret: Boolean(await readSecret()) } });
+  res.json({ success: true, data: await sourceStatus() });
 }));
 
 router.post('/test', auth, requireAuth, asyncWrapper(async (req, res) => {
   try {
     const source = req.body;
+    if (source.refreshInterval !== undefined && !validRefreshInterval(source.refreshInterval)) {
+      throw new Error('Invalid quote refresh interval');
+    }
     const secret = source.authValue === undefined ? await readSecret() : source.authValue;
-    const quote = await fetchQuote(source, secret);
+    const headers = resolveHeaders(source.headers, await readHeaders());
+    const quote = await fetchQuote(source, secret, headers);
     return res.json({ success: true, data: quote });
   } catch (error) {
     return res.status(400).json({ success: false, error: 'Quote endpoint test failed: ' + (
@@ -49,7 +70,7 @@ router.post('/test', auth, requireAuth, asyncWrapper(async (req, res) => {
 }));
 
 router.put('/source', auth, requireAuth, asyncWrapper(async (req, res) => {
-  const { source, authValue, ...details } = req.body;
+  const { source, authValue, headers, ...details } = req.body;
   if (!['local', 'endpoint'].includes(source)) {
     return res.status(400).json({ success: false, error: 'Invalid quote source' });
   }
@@ -60,8 +81,16 @@ router.put('/source', auth, requireAuth, asyncWrapper(async (req, res) => {
     quoteEndpointQueryName: details.queryName,
     quoteTextPath: details.textPath,
     quoteAuthorPath: details.authorPath,
+    ...(details.refreshInterval === undefined ? {} : {
+      quoteEndpointRefreshInterval: details.refreshInterval,
+    }),
   };
+  let resolvedHeaders;
   try {
+    if (details.refreshInterval !== undefined && !validRefreshInterval(details.refreshInterval)) {
+      throw new Error('Invalid quote refresh interval');
+    }
+    if (headers !== undefined) resolvedHeaders = resolveHeaders(headers, await readHeaders());
     if (source === 'endpoint') validateSource(details);
     else if (details.url) validateSource(details);
     if (authValue !== undefined && (typeof authValue !== 'string' || authValue.length > 2048)) {
@@ -73,8 +102,10 @@ router.put('/source', auth, requireAuth, asyncWrapper(async (req, res) => {
   await sequelize.transaction(async (transaction) => {
     await saveConfig(settings, transaction);
     await saveSecret(authValue, transaction);
+    if (resolvedHeaders !== undefined) await saveHeaders(resolvedHeaders, transaction);
   });
-  return res.json({ success: true, data: { hasSecret: Boolean(await readSecret()) } });
+  if (source === 'local') clearQuoteCache();
+  return res.json({ success: true, data: await sourceStatus() });
 }));
 
 router.get('/', auth, requireAuth, asyncWrapper(async (req, res) => {

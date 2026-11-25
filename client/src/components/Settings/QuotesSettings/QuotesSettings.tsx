@@ -12,13 +12,17 @@ type Source = {
   url: string;
   authMode: string;
   queryName: string;
+  refreshInterval: number;
   textPath: string;
   authorPath: string;
 };
 
+type CustomHeader = { name: string; value?: string };
+type SourceStatus = { hasSecret: boolean; headerNames: string[] };
+
 const initialSource: Source = {
   source: 'local', url: '', authMode: 'none', queryName: 'api_key',
-  textPath: '$.quote', authorPath: '$.author',
+  textPath: '$.quote', authorPath: '$.author', refreshInterval: 0,
 };
 
 export const QuotesSettings = (): JSX.Element => {
@@ -30,6 +34,8 @@ export const QuotesSettings = (): JSX.Element => {
   const [authValue, setAuthValue] = useState('');
   const [secretChanged, setSecretChanged] = useState(false);
   const [hasSecret, setHasSecret] = useState(false);
+  const [headers, setHeaders] = useState<CustomHeader[]>([]);
+  const [savedHeaderNames, setSavedHeaderNames] = useState<string[]>([]);
   const [result, setResult] = useState('');
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -41,6 +47,7 @@ export const QuotesSettings = (): JSX.Element => {
       url: config.quoteEndpointUrl || '',
       authMode: config.quoteEndpointAuthMode || 'none',
       queryName: config.quoteEndpointQueryName || 'api_key',
+      refreshInterval: config.quoteEndpointRefreshInterval ?? 0,
       textPath: config.quoteTextPath || '$.quote',
       authorPath: config.quoteAuthorPath || '',
     });
@@ -51,27 +58,34 @@ export const QuotesSettings = (): JSX.Element => {
     let active = true;
     Promise.all([
       axios.get<{ data: string[] }>('/api/quotes', { headers: applyAuth() }),
-      axios.get<{ data: { hasSecret: boolean } }>('/api/quotes/source', { headers: applyAuth() }),
+      axios.get<{ data: SourceStatus }>('/api/quotes/source', { headers: applyAuth() }),
     ]).then(([library, settings]) => {
       if (!active) return;
       setQuotes(library.data.data.join('\n'));
       setHasSecret(settings.data.data.hasSecret);
+      setSavedHeaderNames(settings.data.data.headerNames);
+      setHeaders(settings.data.data.headerNames.map((name) => ({ name })));
       setLoaded(true);
     }).catch(() => createNotification({ title: 'Error', message: 'Failed to load quote settings' }));
     return () => { active = false; };
   }, []);
 
-  const change = (key: keyof Source, value: string) =>
+  const change = (key: Exclude<keyof Source, 'refreshInterval'>, value: string) =>
     setSource((current) => ({ ...current, [key]: value }));
 
+  const updateHeader = (index: number, change: Partial<CustomHeader>) =>
+    setHeaders((current) => current.map((header, i) =>
+      i === index ? { ...header, ...change } : header
+    ));
+
   const test = async () => {
-    if (testing) return;
+    if (testing || !loaded) return;
     setTesting(true);
     setResult('');
     try {
       const response = await axios.post<{ data: { quote: string; matchCount: number } }>(
         '/api/quotes/test',
-        { ...source, ...(secretChanged ? { authValue } : {}) },
+        { ...source, headers, ...(secretChanged ? { authValue } : {}) },
         { headers: applyAuth() }
       );
       setResult(`Found ${response.data.data.matchCount} quote(s). Preview: ${response.data.data.quote}`);
@@ -88,20 +102,24 @@ export const QuotesSettings = (): JSX.Element => {
     if (saving || !loaded) return;
     setSaving(true);
     try {
-      await axios.put('/api/quotes/source', {
-        ...source, ...(secretChanged ? { authValue } : {}),
+      const response = await axios.put<{ data: SourceStatus }>('/api/quotes/source', {
+        ...source, headers, ...(secretChanged ? { authValue } : {}),
       }, { headers: applyAuth() });
       await axios.put('/api/interface', {
         config: { quoteStyle: style },
         quotes: quotes.split('\n').map((item) => item.trim()).filter(Boolean),
       }, { headers: applyAuth() });
       setSecretChanged(false);
-      setHasSecret(source.authMode !== 'none' && (authValue ? true : hasSecret && !secretChanged));
+      setHasSecret(response.data.data.hasSecret);
+      setSavedHeaderNames(response.data.data.headerNames);
+      setHeaders(response.data.data.headerNames.map((name) => ({ name })));
       setAuthValue('');
       await getConfig();
       createNotification({ title: 'Success', message: 'Quote settings saved' });
-    } catch {
-      createNotification({ title: 'Error', message: 'Failed to save quote settings' });
+    } catch (error) {
+      createNotification({ title: 'Error', message: axios.isAxiosError(error)
+        ? error.response?.data?.error || 'Failed to save quote settings'
+        : 'Failed to save quote settings' });
     } finally {
       setSaving(false);
     }
@@ -148,6 +166,27 @@ export const QuotesSettings = (): JSX.Element => {
               onChange={(event) => change('url', event.target.value)} />
           </InputGroup>
           <InputGroup>
+            <label htmlFor="quoteRefreshInterval">Minimum refresh interval</label>
+            <select id="quoteRefreshInterval" value={source.refreshInterval}
+              onChange={(event) => setSource((current) => ({
+                ...current, refreshInterval: Number(event.target.value),
+              }))}>
+              <option value={0}>None</option>
+              <option value={60}>1 min</option>
+              <option value={300}>5 min</option>
+              <option value={600}>10 min</option>
+              <option value={900}>15 min</option>
+              <option value={1800}>30 min</option>
+              <option value={3600}>1 h</option>
+              <option value={7200}>2 h</option>
+              <option value={14400}>4 h</option>
+              <option value={21600}>6 h</option>
+              <option value={43200}>12 h</option>
+              <option value={86400}>24 h</option>
+            </select>
+            <span>Reuse the last quote for this interval across all clients. Test endpoint always makes a new request.</span>
+          </InputGroup>
+          <InputGroup>
             <label htmlFor="quoteAuthMode">Authentication</label>
             <select id="quoteAuthMode" value={source.authMode}
               onChange={(event) => change('authMode', event.target.value)}>
@@ -176,6 +215,39 @@ export const QuotesSettings = (): JSX.Element => {
               }}>Clear saved credential</Button>}
             </InputGroup>
           )}
+          <SettingsHeadline text="Custom HTTP headers" />
+          <p style={{ marginBottom: 16 }}>
+            Optional request headers, such as Authorization, X-API-Key or Accept.
+            They can be combined with the authentication settings above.
+            Values are stored on the server and never returned to the browser.
+          </p>
+          {headers.map((header, index) => {
+            const saved = savedHeaderNames.some((name) =>
+              name.toLowerCase() === header.name.trim().toLowerCase()
+            );
+            return (
+              <InputGroup key={index}>
+                <label htmlFor={`quoteHeaderName${index}`}>Header name {index + 1}</label>
+                <input id={`quoteHeaderName${index}`} required maxLength={128}
+                  placeholder="X-API-Key" value={header.name}
+                  onChange={(event) => updateHeader(index, { name: event.target.value })} />
+                <label htmlFor={`quoteHeaderValue${index}`}>Header value {index + 1}</label>
+                <input id={`quoteHeaderValue${index}`} type="password" autoComplete="new-password"
+                  maxLength={2048} value={header.value ?? ''}
+                  placeholder={saved && header.value === undefined ? 'Saved (leave unchanged to keep)' : 'Header value'}
+                  onChange={(event) => updateHeader(index, { value: event.target.value })} />
+                <Button type="button" click={() => setHeaders((current) =>
+                  current.filter((_, i) => i !== index)
+                )}>Remove header {index + 1}</Button>
+              </InputGroup>
+            );
+          })}
+          <div style={{ marginBottom: 20 }}>
+            <Button type="button" disabled={!loaded || headers.length >= 32}
+              click={() => setHeaders((current) => [...current, { name: '', value: '' }])}>
+              Add header
+            </Button>
+          </div>
           <SettingsHeadline text="JSONPath extraction" />
           <InputGroup>
             <label htmlFor="quoteTextPath">Quote JSONPath</label>
@@ -191,7 +263,7 @@ export const QuotesSettings = (): JSX.Element => {
             <span>Supports object properties, array indexes and [*] wildcards. Authors are appended in parentheses.</span>
           </InputGroup>
           <div style={{ marginBottom: 16 }}>
-            <Button type="button" disabled={testing} click={test}>
+            <Button type="button" disabled={!loaded || testing} click={test}>
               {testing ? 'Testing...' : 'Test endpoint'}
             </Button>
           </div>
