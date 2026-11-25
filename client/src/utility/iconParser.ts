@@ -1,14 +1,15 @@
 /**
- * Parse Material Desgin icon name to be used with mdi/js
- * @param mdiName Dash separated icon name from MDI, e.g. alert-box-outline
- * @returns Parsed icon name to be used with mdi/js, e.g mdiAlertBoxOutline
+ * Convert a dash-separated MDI icon name to its @mdi/js export name.
+ * Use the default icon when the name is missing or empty.
  */
-export const iconParser = (mdiName: string): string => {
-  let parsedName = mdiName
-    .split('-')
-    .map((word: string) => `${word[0].toUpperCase()}${word.slice(1)}`)
-    .join('');
-  parsedName = `mdi${parsedName}`;
+export const iconParser = (mdiName?: string | null): string => {
+  if (typeof mdiName !== 'string') return 'mdiCancel';
 
-  return parsedName;
-}
+  const parsedName = mdiName.trim()
+    .split('-')
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join('');
+
+  return parsedName ? `mdi${parsedName}` : 'mdiCancel';
+};
